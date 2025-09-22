@@ -1,0 +1,65 @@
+# ============================================================================
+# AlertManager Configuration for AI-SOC (Minimal)
+# ============================================================================
+# Note: Email/Slack configs commented out. Configure in production with actual values.
+
+global:
+  resolve_timeout: 5m
+
+# Route tree
+route:
+  group_by: ['alertname', 'cluster', 'component']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  receiver: 'default'
+
+  routes:
+    # Critical alerts - immediate notification
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      group_wait: 10s
+      repeat_interval: 1h
+
+    # Warning alerts - grouped notification
+    - match:
+        severity: warning
+      receiver: 'warning-alerts'
+      group_wait: 1m
+      repeat_interval: 4h
+
+# Inhibition rules (suppress redundant alerts)
+inhibit_rules:
+  # Inhibit warning if critical alert is firing
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'instance']
+
+  # Inhibit container alerts if service is down
+  - source_match:
+      alertname: 'ServiceDown'
+    target_match_re:
+      alertname: 'Container.*'
+    equal: ['instance']
+
+# Receivers (webhook only for development)
+receivers:
+  # Default receiver - logs to console
+  - name: 'default'
+
+  # Critical alerts
+  - name: 'critical-alerts'
+
+  # Warning alerts
+  - name: 'warning-alerts'
+
+# Production configuration template (uncomment and configure):
+# global:
+#   smtp_smarthost: 'smtp.gmail.com:587'
+#   smtp_from: 'ai-soc@yourdomain.com'
+#   smtp_auth_username: 'your-email@gmail.com'
+#   smtp_auth_password: 'your-app-password'
+#   slack_api_url: 'https://hooks.slack.com/services/YOUR/WEBHOOK/URL'
