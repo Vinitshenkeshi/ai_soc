@@ -1,0 +1,57 @@
+# CICIDS2017 ML Inference Service - Docker Compose Configuration
+# Mission: OPERATION ML-BASELINE
+# Agent: HOLLOWED_EYES
+#
+# Usage:
+#   docker-compose -f docker-compose.inference.yml up -d
+#   docker-compose -f docker-compose.inference.yml logs -f
+#   docker-compose -f docker-compose.inference.yml down
+
+version: '3.8'
+
+services:
+  ids-inference:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ids-inference:latest
+    container_name: ids-inference
+
+    ports:
+      - "8000:8000"
+
+    volumes:
+      # Mount models directory (read-only for security)
+      - ../models:/app/models:ro
+
+    environment:
+      - MODEL_PATH=/app/models
+      - LOG_LEVEL=INFO
+      - PYTHONUNBUFFERED=1
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 10s
+      retries: 3
+
+    restart: unless-stopped
+
+    networks:
+      - ai_soc
+
+    # Resource limits (adjust based on your infrastructure)
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+networks:
+  ai_soc:
+    driver: bridge
+    name: ai_soc_network
