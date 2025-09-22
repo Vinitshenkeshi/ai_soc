@@ -1,0 +1,119 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv
+
+# AI tooling config
+.claude/
+.agents/
+.codex/
+.aletheia/
+.serena/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Docker
+.dockerignore
+*.log
+
+# Secrets & Credentials
+.env
+.env.local
+credentials/
+secrets/
+
+# SSL Certificates (exclude all cert files, track only directory structure)
+*.key
+*.pem
+*.crt
+*.csr
+*.srl
+config/*/certs/*
+!config/*/certs/.gitkeep
+config/root-ca/*
+!config/root-ca/.gitkeep
+
+# Config secrets
+config/secrets.yaml
+config/**/*-key.*
+config/**/private/
+
+# Internal development files
+.internal/
+*.pyc
+__pycache__/
+
+# Datasets (large files)
+datasets/**/*.csv
+datasets/**/*.pcap
+datasets/**/*.json
+datasets/**/*.zip
+!datasets/README.md
+!datasets/.gitkeep
+!datasets/**/README.md
+!datasets/**/DATASET_VALIDATION_REPORT.md
+!datasets/**/*.py
+!datasets/**/*.md5
+
+# Models (large files)
+models/*.bin
+models/*.safetensors
+models/*.gguf
+!models/README.md
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# ChromaDB
+chroma_db/
+*.db
+
+# Ollama
+ollama/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Documentation builds
+docs/_build/
+site/
