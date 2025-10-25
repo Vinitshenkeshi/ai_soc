@@ -1,0 +1,108 @@
+{
+  "experiment": "Single-Run vs Swarm",
+  "hypothesis": "Swarm statistical output changes (improves) host prioritization vs single run",
+  "single_run": {
+    "agents": 4,
+    "duration_seconds": 28.1,
+    "hosts_compromised": [
+      "10.0.1.10"
+    ],
+    "total_actions": 12
+  },
+  "swarm_run": {
+    "total_agents": 7575,
+    "duration_seconds": 731.838
+  },
+  "host_comparison": [
+    {
+      "host": "10.0.0.10",
+      "hostname": "web-server-01",
+      "single_run_compromised": false,
+      "single_run_priority": 2,
+      "swarm_compromise_rate": 0.0076,
+      "swarm_ci_95": [
+        0.0057,
+        0.0101
+      ],
+      "swarm_priority": 2,
+      "priority_change": 0,
+      "ground_truth": true
+    },
+    {
+      "host": "10.0.0.20",
+      "hostname": "mail-server-01",
+      "single_run_compromised": false,
+      "single_run_priority": 3,
+      "swarm_compromise_rate": 0.0003,
+      "swarm_ci_95": [
+        0.0001,
+        0.0012
+      ],
+      "swarm_priority": 3,
+      "priority_change": 0,
+      "ground_truth": false
+    },
+    {
+      "host": "10.0.1.10",
+      "hostname": "workstation-01",
+      "single_run_compromised": true,
+      "single_run_priority": 1,
+      "swarm_compromise_rate": 0.25,
+      "swarm_ci_95": [
+        0.2393,
+        0.2611
+      ],
+      "swarm_priority": 1,
+      "priority_change": 0,
+      "ground_truth": true
+    },
+    {
+      "host": "10.0.1.20",
+      "hostname": "file-server-01",
+      "single_run_compromised": false,
+      "single_run_priority": 4,
+      "swarm_compromise_rate": 0.0,
+      "swarm_ci_95": [
+        0,
+        0.0006
+      ],
+      "swarm_priority": 4,
+      "priority_change": 0,
+      "ground_truth": true
+    },
+    {
+      "host": "10.0.2.10",
+      "hostname": "prod-db-01",
+      "single_run_compromised": false,
+      "single_run_priority": 5,
+      "swarm_compromise_rate": 0.0,
+      "swarm_ci_95": [
+        0,
+        0.0006
+      ],
+      "swarm_priority": 5,
+      "priority_change": 0,
+      "ground_truth": true
+    },
+    {
+      "host": "10.0.2.20",
+      "hostname": "dc-01",
+      "single_run_compromised": false,
+      "single_run_priority": 6,
+      "swarm_compromise_rate": 0.0,
+      "swarm_ci_95": [
+        0,
+        0.0006
+      ],
+      "swarm_priority": 6,
+      "priority_change": 0,
+      "ground_truth": false
+    }
+  ],
+  "ranking_changed": false,
+  "mean_rank_delta": 0,
+  "single_run_ground_truth_matches": 3,
+  "swarm_ground_truth_matches": 2,
+  "total_hosts": 6,
+  "analysis": "Single-run matched ground truth on 3/6 hosts. Swarm matched on 2/6 hosts. Mean rank delta: 0 positions. Single run surprisingly competitive at this scale."
+}

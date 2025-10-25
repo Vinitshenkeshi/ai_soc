@@ -1,0 +1,129 @@
+{
+  "experiment": "Defender Impact",
+  "hypothesis": "LLM-powered defenders meaningfully reduce compromise rates",
+  "overall_compromise_with_defenders": 0.043,
+  "overall_compromise_without_defenders": 0.0636,
+  "overall_reduction_pct": 32.5,
+  "host_comparison": [
+    {
+      "host": "10.0.0.10",
+      "hostname": "web-server-01",
+      "criticality": "high",
+      "rate_with_defenders": 0.0076,
+      "rate_without_defenders": 0.0916,
+      "absolute_reduction": 0.084,
+      "relative_reduction_pct": 91.7
+    },
+    {
+      "host": "10.0.0.20",
+      "hostname": "mail-server-01",
+      "criticality": "high",
+      "rate_with_defenders": 0.0003,
+      "rate_without_defenders": 0.0403,
+      "absolute_reduction": 0.04,
+      "relative_reduction_pct": 99.3
+    },
+    {
+      "host": "10.0.1.10",
+      "hostname": "workstation-01",
+      "criticality": "medium",
+      "rate_with_defenders": 0.25,
+      "rate_without_defenders": 0.25,
+      "absolute_reduction": 0.0,
+      "relative_reduction_pct": 0.0
+    },
+    {
+      "host": "10.0.1.20",
+      "hostname": "file-server-01",
+      "criticality": "high",
+      "rate_with_defenders": 0.0,
+      "rate_without_defenders": 0.0,
+      "absolute_reduction": 0.0,
+      "relative_reduction_pct": 0.0
+    },
+    {
+      "host": "10.0.2.10",
+      "hostname": "prod-db-01",
+      "criticality": "critical",
+      "rate_with_defenders": 0.0,
+      "rate_without_defenders": 0.0,
+      "absolute_reduction": 0.0,
+      "relative_reduction_pct": 0.0
+    },
+    {
+      "host": "10.0.2.20",
+      "hostname": "dc-01",
+      "criticality": "critical",
+      "rate_with_defenders": 0.0,
+      "rate_without_defenders": 0.0,
+      "absolute_reduction": 0.0,
+      "relative_reduction_pct": 0.0
+    }
+  ],
+  "archetype_impact": {
+    "opportunist": {
+      "success_rate_with_defenders": 0.1081,
+      "success_rate_without_defenders": 0.98,
+      "hosts_compromised_with": 0,
+      "hosts_compromised_without": 0.0066
+    },
+    "apt": {
+      "success_rate_with_defenders": 0.1358,
+      "success_rate_without_defenders": 1.0,
+      "hosts_compromised_with": 0,
+      "hosts_compromised_without": 0
+    },
+    "ransomware": {
+      "success_rate_with_defenders": 0.0382,
+      "success_rate_without_defenders": 0.5045,
+      "hosts_compromised_with": 0.0317,
+      "hosts_compromised_without": 0.5208
+    },
+    "insider": {
+      "success_rate_with_defenders": 0.5598,
+      "success_rate_without_defenders": 0.695,
+      "hosts_compromised_with": 1,
+      "hosts_compromised_without": 1
+    }
+  },
+  "defense_effectiveness": {
+    "firewall": {
+      "block_rate": 0.9484,
+      "times_tested": 30300,
+      "times_blocked": 28737,
+      "confidence_interval_95": [
+        0.9459,
+        0.9509
+      ]
+    },
+    "mfa": {
+      "block_rate": 0.9999,
+      "times_tested": 18180,
+      "times_blocked": 18178,
+      "confidence_interval_95": [
+        0.9996,
+        1.0
+      ]
+    },
+    "patching": {
+      "block_rate": 0.9999,
+      "times_tested": 18180,
+      "times_blocked": 18178,
+      "confidence_interval_95": [
+        0.9996,
+        1.0
+      ]
+    },
+    "edr": {
+      "block_rate": 1.0,
+      "times_tested": 12120,
+      "times_blocked": 12120,
+      "confidence_interval_95": [
+        0.9997,
+        1
+      ]
+    }
+  },
+  "no_defender_run_duration": 206.2,
+  "analysis": "Defenders reduced overall compromise rate from 6.4% to 4.3% (32.5% reduction). Defenders have measurable impact on attacker success."
+}
