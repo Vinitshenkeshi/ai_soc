@@ -1,0 +1,120 @@
+{
+  "name": "AI-SOC Default Environment",
+  "description": "A realistic 6-host enterprise network for attack campaign simulation",
+  "hosts": {
+    "10.0.0.10": {
+      "hostname": "web-server-01",
+      "os": "linux",
+      "criticality": "high",
+      "services": [
+        {"name": "nginx", "port": 80, "version": "1.24.0", "exposed_externally": true, "cves": ["CVE-2024-7347"]},
+        {"name": "nginx-ssl", "port": 443, "version": "1.24.0", "exposed_externally": true, "cves": ["CVE-2024-7347"]},
+        {"name": "ssh", "port": 22, "version": "8.9p1", "exposed_externally": false, "cves": []}
+      ],
+      "defenses": {
+        "edr_present": false,
+        "mfa_enabled": false,
+        "firewall_enabled": true,
+        "patched": false,
+        "wazuh_agent": true
+      }
+    },
+    "10.0.0.20": {
+      "hostname": "mail-server-01",
+      "os": "linux",
+      "criticality": "high",
+      "services": [
+        {"name": "postfix", "port": 25, "version": "3.7.4", "exposed_externally": true, "cves": []},
+        {"name": "dovecot", "port": 993, "version": "2.3.20", "exposed_externally": true, "cves": []},
+        {"name": "ssh", "port": 22, "version": "8.9p1", "exposed_externally": false, "cves": []}
+      ],
+      "defenses": {
+        "edr_present": false,
+        "mfa_enabled": true,
+        "firewall_enabled": true,
+        "patched": true,
+        "wazuh_agent": true
+      }
+    },
+    "10.0.1.10": {
+      "hostname": "workstation-01",
+      "os": "windows",
+      "criticality": "medium",
+      "services": [
+        {"name": "rdp", "port": 3389, "version": "10.0", "exposed_externally": false, "cves": ["CVE-2024-38077"]},
+        {"name": "smb", "port": 445, "version": "3.1.1", "exposed_externally": false, "cves": []}
+      ],
+      "defenses": {
+        "edr_present": false,
+        "mfa_enabled": false,
+        "firewall_enabled": true,
+        "patched": false,
+        "wazuh_agent": false
+      }
+    },
+    "10.0.1.20": {
+      "hostname": "file-server-01",
+      "os": "windows",
+      "criticality": "high",
+      "services": [
+        {"name": "smb", "port": 445, "version": "3.1.1", "exposed_externally": false, "cves": []},
+        {"name": "rdp", "port": 3389, "version": "10.0", "exposed_externally": false, "cves": []}
+      ],
+      "defenses": {
+        "edr_present": false,
+        "mfa_enabled": false,
+        "firewall_enabled": false,
+        "patched": true,
+        "wazuh_agent": true
+      }
+    },
+    "10.0.2.10": {
+      "hostname": "prod-db-01",
+      "os": "linux",
+      "criticality": "critical",
+      "services": [
+        {"name": "postgresql", "port": 5432, "version": "15.2", "exposed_externally": false, "cves": ["CVE-2024-10978"]},
+        {"name": "ssh", "port": 22, "version": "9.0p1", "exposed_externally": false, "cves": []}
+      ],
+      "defenses": {
+        "edr_present": true,
+        "mfa_enabled": true,
+        "firewall_enabled": true,
+        "patched": false,
+        "wazuh_agent": true
+      }
+    },
+    "10.0.2.20": {
+      "hostname": "dc-01",
+      "os": "windows",
+      "criticality": "critical",
+      "services": [
+        {"name": "ldap", "port": 389, "version": "2022", "exposed_externally": false, "cves": []},
+        {"name": "kerberos", "port": 88, "version": "2022", "exposed_externally": false, "cves": []},
+        {"name": "rdp", "port": 3389, "version": "10.0", "exposed_externally": false, "cves": []},
+        {"name": "smb", "port": 445, "version": "3.1.1", "exposed_externally": false, "cves": []}
+      ],
+      "defenses": {
+        "edr_present": true,
+        "mfa_enabled": true,
+        "firewall_enabled": true,
+        "patched": true,
+        "wazuh_agent": true
+      }
+    }
+  },
+  "segments": {
+    "dmz": {
+      "hosts": ["10.0.0.10", "10.0.0.20"],
+      "reachable_from": ["external", "internal"]
+    },
+    "internal": {
+      "hosts": ["10.0.1.10", "10.0.1.20"],
+      "reachable_from": ["dmz", "critical"]
+    },
+    "critical": {
+      "hosts": ["10.0.2.10", "10.0.2.20"],
+      "reachable_from": ["internal"]
+    }
+  }
+}
