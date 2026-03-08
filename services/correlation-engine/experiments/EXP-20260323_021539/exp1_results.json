@@ -1,0 +1,617 @@
+{
+  "experiment": "Scale vs Discovery",
+  "hypothesis": "Larger swarms discover more unique attack paths and emergent strategies",
+  "scales_tested": 6,
+  "results": [
+    {
+      "swarm_size": 10,
+      "total_agents": 825,
+      "duration_seconds": 278.9,
+      "unique_paths": 3,
+      "strategic_diversity": 0.1579,
+      "emergent_discoveries": 1,
+      "emergent_details": [
+        {
+          "archetype": "ransomware",
+          "emergent_path": "port_scan->port_scan->brute_force_creds",
+          "follower_success_rate": 0.4545,
+          "leader_success_rate": 0.2667,
+          "improvement": 0.1879,
+          "sample_size": 11,
+          "insight": "Followers diverged from ransomware leader strategy and discovered path 'port_scan->port_scan->brute_force_creds' with 45% success vs leader's 27% \u2014 a 19pp improvement"
+        }
+      ],
+      "convergence_achieved": false,
+      "convergence_batch": 3,
+      "overall_compromise_rate": 0.048,
+      "host_compromise_rates": {
+        "10.0.0.10": 0.0348,
+        "10.0.0.20": 0.003,
+        "10.0.1.10": 0.25,
+        "10.0.1.20": 0.0,
+        "10.0.2.10": 0.0,
+        "10.0.2.20": 0.0
+      },
+      "host_confidence_intervals": {
+        "10.0.0.10": [
+          0.0233,
+          0.0517
+        ],
+        "10.0.0.20": [
+          0.0008,
+          0.011
+        ],
+        "10.0.1.10": [
+          0.2185,
+          0.2844
+        ],
+        "10.0.1.20": [
+          0,
+          0.0058
+        ],
+        "10.0.2.10": [
+          0,
+          0.0058
+        ],
+        "10.0.2.20": [
+          0,
+          0.0058
+        ]
+      },
+      "attacker_learning_trend": "improving",
+      "batch_evolution": [
+        {
+          "batch": 0,
+          "hosts_compromised": 3,
+          "success_rate": 0.6944,
+          "unique_strategies": 5
+        },
+        {
+          "batch": 1,
+          "hosts_compromised": 3,
+          "success_rate": 0.7222,
+          "unique_strategies": 5
+        },
+        {
+          "batch": 2,
+          "hosts_compromised": 3,
+          "success_rate": 0.7222,
+          "unique_strategies": 5
+        },
+        {
+          "batch": 3,
+          "hosts_compromised": 4,
+          "success_rate": 0.8056,
+          "unique_strategies": 5
+        },
+        {
+          "batch": 4,
+          "hosts_compromised": 6,
+          "success_rate": 0.8333,
+          "unique_strategies": 5
+        }
+      ],
+      "archetype_stats": {
+        "opportunist": {
+          "success_rate_mean": 0.2606,
+          "hosts_compromised_mean": 0
+        },
+        "apt": {
+          "success_rate_mean": 0.2848,
+          "hosts_compromised_mean": 0
+        },
+        "ransomware": {
+          "success_rate_mean": 0.196,
+          "hosts_compromised_mean": 0.1515
+        },
+        "insider": {
+          "success_rate_mean": 0.7838,
+          "hosts_compromised_mean": 1
+        }
+      }
+    },
+    {
+      "swarm_size": 25,
+      "total_agents": 1950,
+      "duration_seconds": 282.4,
+      "unique_paths": 2,
+      "strategic_diversity": 0.125,
+      "emergent_discoveries": 0,
+      "emergent_details": [],
+      "convergence_achieved": false,
+      "convergence_batch": 3,
+      "overall_compromise_rate": 0.0418,
+      "host_compromise_rates": {
+        "10.0.0.10": 0.0,
+        "10.0.0.20": 0.0006,
+        "10.0.1.10": 0.25,
+        "10.0.1.20": 0.0,
+        "10.0.2.10": 0.0,
+        "10.0.2.20": 0.0
+      },
+      "host_confidence_intervals": {
+        "10.0.0.10": [
+          0,
+          0.0025
+        ],
+        "10.0.0.20": [
+          0.0001,
+          0.0036
+        ],
+        "10.0.1.10": [
+          0.2291,
+          0.2721
+        ],
+        "10.0.1.20": [
+          0,
+          0.0025
+        ],
+        "10.0.2.10": [
+          0,
+          0.0025
+        ],
+        "10.0.2.20": [
+          0,
+          0.0025
+        ]
+      },
+      "attacker_learning_trend": "stable",
+      "batch_evolution": [
+        {
+          "batch": 0,
+          "hosts_compromised": 3,
+          "success_rate": 0.6389,
+          "unique_strategies": 4
+        },
+        {
+          "batch": 1,
+          "hosts_compromised": 3,
+          "success_rate": 0.6111,
+          "unique_strategies": 4
+        },
+        {
+          "batch": 2,
+          "hosts_compromised": 3,
+          "success_rate": 0.6111,
+          "unique_strategies": 7
+        },
+        {
+          "batch": 3,
+          "hosts_compromised": 3,
+          "success_rate": 0.6667,
+          "unique_strategies": 6
+        },
+        {
+          "batch": 4,
+          "hosts_compromised": 4,
+          "success_rate": 0.7222,
+          "unique_strategies": 5
+        }
+      ],
+      "archetype_stats": {
+        "opportunist": {
+          "success_rate_mean": 0.0231,
+          "hosts_compromised_mean": 0
+        },
+        "apt": {
+          "success_rate_mean": 0.0256,
+          "hosts_compromised_mean": 0
+        },
+        "ransomware": {
+          "success_rate_mean": 0.0128,
+          "hosts_compromised_mean": 0.0026
+        },
+        "insider": {
+          "success_rate_mean": 0.5778,
+          "hosts_compromised_mean": 1
+        }
+      }
+    },
+    {
+      "swarm_size": 50,
+      "total_agents": 3825,
+      "duration_seconds": 276.5,
+      "unique_paths": 2,
+      "strategic_diversity": 0.125,
+      "emergent_discoveries": 0,
+      "emergent_details": [],
+      "convergence_achieved": false,
+      "convergence_batch": -1,
+      "overall_compromise_rate": 0.0417,
+      "host_compromise_rates": {
+        "10.0.0.10": 0.0,
+        "10.0.0.20": 0.0003,
+        "10.0.1.10": 0.25,
+        "10.0.1.20": 0.0,
+        "10.0.2.10": 0.0,
+        "10.0.2.20": 0.0
+      },
+      "host_confidence_intervals": {
+        "10.0.0.10": [
+          0,
+          0.0013
+        ],
+        "10.0.0.20": [
+          0.0001,
+          0.0018
+        ],
+        "10.0.1.10": [
+          0.235,
+          0.2656
+        ],
+        "10.0.1.20": [
+          0,
+          0.0013
+        ],
+        "10.0.2.10": [
+          0,
+          0.0013
+        ],
+        "10.0.2.20": [
+          0,
+          0.0013
+        ]
+      },
+      "attacker_learning_trend": "degrading",
+      "batch_evolution": [
+        {
+          "batch": 0,
+          "hosts_compromised": 3,
+          "success_rate": 0.7222,
+          "unique_strategies": 4
+        },
+        {
+          "batch": 1,
+          "hosts_compromised": 3,
+          "success_rate": 0.8056,
+          "unique_strategies": 4
+        },
+        {
+          "batch": 2,
+          "hosts_compromised": 3,
+          "success_rate": 0.6389,
+          "unique_strategies": 7
+        },
+        {
+          "batch": 3,
+          "hosts_compromised": 4,
+          "success_rate": 0.8611,
+          "unique_strategies": 4
+        },
+        {
+          "batch": 4,
+          "hosts_compromised": 3,
+          "success_rate": 0.5833,
+          "unique_strategies": 7
+        }
+      ],
+      "archetype_stats": {
+        "opportunist": {
+          "success_rate_mean": 0.0135,
+          "hosts_compromised_mean": 0
+        },
+        "apt": {
+          "success_rate_mean": 0.017,
+          "hosts_compromised_mean": 0
+        },
+        "ransomware": {
+          "success_rate_mean": 0.0065,
+          "hosts_compromised_mean": 0.0013
+        },
+        "insider": {
+          "success_rate_mean": 0.7033,
+          "hosts_compromised_mean": 1
+        }
+      }
+    },
+    {
+      "swarm_size": 100,
+      "total_agents": 7575,
+      "duration_seconds": 271.1,
+      "unique_paths": 2,
+      "strategic_diversity": 0.1176,
+      "emergent_discoveries": 0,
+      "emergent_details": [],
+      "convergence_achieved": false,
+      "convergence_batch": -1,
+      "overall_compromise_rate": 0.0429,
+      "host_compromise_rates": {
+        "10.0.0.10": 0.0071,
+        "10.0.0.20": 0.0003,
+        "10.0.1.10": 0.25,
+        "10.0.1.20": 0.0,
+        "10.0.2.10": 0.0,
+        "10.0.2.20": 0.0
+      },
+      "host_confidence_intervals": {
+        "10.0.0.10": [
+          0.0053,
+          0.0095
+        ],
+        "10.0.0.20": [
+          0.0001,
+          0.0012
+        ],
+        "10.0.1.10": [
+          0.2393,
+          0.2611
+        ],
+        "10.0.1.20": [
+          0,
+          0.0006
+        ],
+        "10.0.2.10": [
+          0,
+          0.0006
+        ],
+        "10.0.2.20": [
+          0,
+          0.0006
+        ]
+      },
+      "attacker_learning_trend": "degrading",
+      "batch_evolution": [
+        {
+          "batch": 0,
+          "hosts_compromised": 4,
+          "success_rate": 0.75,
+          "unique_strategies": 5
+        },
+        {
+          "batch": 1,
+          "hosts_compromised": 3,
+          "success_rate": 0.7778,
+          "unique_strategies": 5
+        },
+        {
+          "batch": 2,
+          "hosts_compromised": 4,
+          "success_rate": 0.5833,
+          "unique_strategies": 7
+        },
+        {
+          "batch": 3,
+          "hosts_compromised": 3,
+          "success_rate": 0.75,
+          "unique_strategies": 5
+        },
+        {
+          "batch": 4,
+          "hosts_compromised": 3,
+          "success_rate": 0.7222,
+          "unique_strategies": 4
+        }
+      ],
+      "archetype_stats": {
+        "opportunist": {
+          "success_rate_mean": 0.2026,
+          "hosts_compromised_mean": 0
+        },
+        "apt": {
+          "success_rate_mean": 0.1993,
+          "hosts_compromised_mean": 0.0099
+        },
+        "ransomware": {
+          "success_rate_mean": 0.0838,
+          "hosts_compromised_mean": 0.0198
+        },
+        "insider": {
+          "success_rate_mean": 0.703,
+          "hosts_compromised_mean": 1
+        }
+      }
+    },
+    {
+      "swarm_size": 200,
+      "total_agents": 15075,
+      "duration_seconds": 270.6,
+      "unique_paths": 1,
+      "strategic_diversity": 0.0667,
+      "emergent_discoveries": 0,
+      "emergent_details": [],
+      "convergence_achieved": false,
+      "convergence_batch": -1,
+      "overall_compromise_rate": 0.0417,
+      "host_compromise_rates": {
+        "10.0.0.10": 0.0,
+        "10.0.0.20": 0.0,
+        "10.0.1.10": 0.25,
+        "10.0.1.20": 0.0,
+        "10.0.2.10": 0.0,
+        "10.0.2.20": 0.0
+      },
+      "host_confidence_intervals": {
+        "10.0.0.10": [
+          0,
+          0.0003
+        ],
+        "10.0.0.20": [
+          0,
+          0.0003
+        ],
+        "10.0.1.10": [
+          0.2424,
+          0.2578
+        ],
+        "10.0.1.20": [
+          0,
+          0.0003
+        ],
+        "10.0.2.10": [
+          0,
+          0.0003
+        ],
+        "10.0.2.20": [
+          0,
+          0.0003
+        ]
+      },
+      "attacker_learning_trend": "degrading",
+      "batch_evolution": [
+        {
+          "batch": 0,
+          "hosts_compromised": 3,
+          "success_rate": 0.8056,
+          "unique_strategies": 5
+        },
+        {
+          "batch": 1,
+          "hosts_compromised": 3,
+          "success_rate": 0.8333,
+          "unique_strategies": 5
+        },
+        {
+          "batch": 2,
+          "hosts_compromised": 3,
+          "success_rate": 0.6667,
+          "unique_strategies": 6
+        },
+        {
+          "batch": 3,
+          "hosts_compromised": 3,
+          "success_rate": 0.6667,
+          "unique_strategies": 5
+        },
+        {
+          "batch": 4,
+          "hosts_compromised": 3,
+          "success_rate": 0.6111,
+          "unique_strategies": 5
+        }
+      ],
+      "archetype_stats": {
+        "opportunist": {
+          "success_rate_mean": 0.0035,
+          "hosts_compromised_mean": 0
+        },
+        "apt": {
+          "success_rate_mean": 0.0042,
+          "hosts_compromised_mean": 0
+        },
+        "ransomware": {
+          "success_rate_mean": 0.0019,
+          "hosts_compromised_mean": 0
+        },
+        "insider": {
+          "success_rate_mean": 0.5638,
+          "hosts_compromised_mean": 1
+        }
+      }
+    },
+    {
+      "swarm_size": 500,
+      "total_agents": 37575,
+      "duration_seconds": 273.9,
+      "unique_paths": 3,
+      "strategic_diversity": 0.1667,
+      "emergent_discoveries": 0,
+      "emergent_details": [],
+      "convergence_achieved": false,
+      "convergence_batch": 4,
+      "overall_compromise_rate": 0.0474,
+      "host_compromise_rates": {
+        "10.0.0.10": 0.0346,
+        "10.0.0.20": 0.0,
+        "10.0.1.10": 0.25,
+        "10.0.1.20": 0.0,
+        "10.0.2.10": 0.0,
+        "10.0.2.20": 0.0
+      },
+      "host_confidence_intervals": {
+        "10.0.0.10": [
+          0.0326,
+          0.0368
+        ],
+        "10.0.0.20": [
+          0.0,
+          0.0002
+        ],
+        "10.0.1.10": [
+          0.2451,
+          0.2549
+        ],
+        "10.0.1.20": [
+          0,
+          0.0001
+        ],
+        "10.0.2.10": [
+          0,
+          0.0001
+        ],
+        "10.0.2.20": [
+          0,
+          0.0001
+        ]
+      },
+      "attacker_learning_trend": "degrading",
+      "batch_evolution": [
+        {
+          "batch": 0,
+          "hosts_compromised": 3,
+          "success_rate": 0.7778,
+          "unique_strategies": 6
+        },
+        {
+          "batch": 1,
+          "hosts_compromised": 3,
+          "success_rate": 0.7222,
+          "unique_strategies": 4
+        },
+        {
+          "batch": 2,
+          "hosts_compromised": 4,
+          "success_rate": 0.7222,
+          "unique_strategies": 5
+        },
+        {
+          "batch": 3,
+          "hosts_compromised": 5,
+          "success_rate": 0.75,
+          "unique_strategies": 6
+        },
+        {
+          "batch": 4,
+          "hosts_compromised": 3,
+          "success_rate": 0.6111,
+          "unique_strategies": 4
+        }
+      ],
+      "archetype_stats": {
+        "opportunist": {
+          "success_rate_mean": 0.2198,
+          "hosts_compromised_mean": 0.018
+        },
+        "apt": {
+          "success_rate_mean": 0.2312,
+          "hosts_compromised_mean": 0
+        },
+        "ransomware": {
+          "success_rate_mean": 0.1646,
+          "hosts_compromised_mean": 0.1207
+        },
+        "insider": {
+          "success_rate_mean": 0.5635,
+          "hosts_compromised_mean": 1
+        }
+      }
+    }
+  ],
+  "analysis": {
+    "path_count_trend": "flat_or_decreasing",
+    "emergent_discovery_trend": "flat_or_decreasing",
+    "min_convergent_swarm_size": null,
+    "discovery_per_agent": {
+      "10": 0.001212,
+      "25": 0.0,
+      "50": 0.0,
+      "100": 0.0,
+      "200": 0.0,
+      "500": 0.0
+    },
+    "compromise_rate_range": [
+      0.0417,
+      0.048
+    ],
+    "conclusion": "Unique paths do not clearly increase with swarm size. Emergent discoveries do not clearly increase. No convergence achieved at tested scales."
+  }
+}
