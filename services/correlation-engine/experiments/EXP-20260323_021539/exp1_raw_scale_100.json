@@ -1,0 +1,636 @@
+{
+  "swarm_id": "SWARM-20260323022937-6d1f",
+  "timestamp": "2026-03-23T02:34:08.541892",
+  "duration_ms": 271042,
+  "config": {
+    "swarm_size": 100,
+    "monte_carlo_runs": 5,
+    "timesteps": 3,
+    "agent_archetypes": [
+      "opportunist",
+      "apt",
+      "ransomware",
+      "insider"
+    ],
+    "defender_archetypes": [
+      "soc_analyst",
+      "incident_responder",
+      "threat_hunter"
+    ],
+    "defenders_enabled": true
+  },
+  "total_simulations": 5,
+  "total_agent_runs": 7575,
+  "host_risk_heatmap": {
+    "10.0.0.10": {
+      "hostname": "web-server-01",
+      "criticality": "high",
+      "compromise_rate": 0.0071,
+      "compromise_count": 43,
+      "total_runs": 6060,
+      "confidence_interval_95": [
+        0.0053,
+        0.0095
+      ]
+    },
+    "10.0.0.20": {
+      "hostname": "mail-server-01",
+      "criticality": "high",
+      "compromise_rate": 0.0003,
+      "compromise_count": 2,
+      "total_runs": 6060,
+      "confidence_interval_95": [
+        0.0001,
+        0.0012
+      ]
+    },
+    "10.0.1.10": {
+      "hostname": "workstation-01",
+      "criticality": "medium",
+      "compromise_rate": 0.25,
+      "compromise_count": 1515,
+      "total_runs": 6060,
+      "confidence_interval_95": [
+        0.2393,
+        0.2611
+      ]
+    },
+    "10.0.1.20": {
+      "hostname": "file-server-01",
+      "criticality": "high",
+      "compromise_rate": 0.0,
+      "compromise_count": 0,
+      "total_runs": 6060,
+      "confidence_interval_95": [
+        0,
+        0.0006
+      ]
+    },
+    "10.0.2.10": {
+      "hostname": "prod-db-01",
+      "criticality": "critical",
+      "compromise_rate": 0.0,
+      "compromise_count": 0,
+      "total_runs": 6060,
+      "confidence_interval_95": [
+        0,
+        0.0006
+      ]
+    },
+    "10.0.2.20": {
+      "hostname": "dc-01",
+      "criticality": "critical",
+      "compromise_rate": 0.0,
+      "compromise_count": 0,
+      "total_runs": 6060,
+      "confidence_interval_95": [
+        0,
+        0.0006
+      ]
+    }
+  },
+  "archetype_statistics": {
+    "opportunist": {
+      "sample_size": 1515,
+      "hosts_compromised_mean": 0,
+      "hosts_compromised_std": 0.0,
+      "hosts_compromised_min": 0,
+      "hosts_compromised_max": 0,
+      "success_rate_mean": 0.2026,
+      "success_rate_std": 0.3047,
+      "success_rate_min": 0.0,
+      "success_rate_max": 1.0,
+      "detection_rate_mean": 0.9177,
+      "detection_rate_std": 0.1817,
+      "detection_rate_min": 0.0,
+      "detection_rate_max": 1.0,
+      "data_exfiltration_rate": 0.0
+    },
+    "apt": {
+      "sample_size": 1515,
+      "hosts_compromised_mean": 0.0099,
+      "hosts_compromised_std": 0.099,
+      "hosts_compromised_min": 0,
+      "hosts_compromised_max": 1,
+      "success_rate_mean": 0.1993,
+      "success_rate_std": 0.319,
+      "success_rate_min": 0.0,
+      "success_rate_max": 1.0,
+      "detection_rate_mean": 0.8235,
+      "detection_rate_std": 0.2925,
+      "detection_rate_min": 0.0,
+      "detection_rate_max": 1.0,
+      "data_exfiltration_rate": 0.0
+    },
+    "ransomware": {
+      "sample_size": 1515,
+      "hosts_compromised_mean": 0.0198,
+      "hosts_compromised_std": 0.1394,
+      "hosts_compromised_min": 0,
+      "hosts_compromised_max": 1,
+      "success_rate_mean": 0.0838,
+      "success_rate_std": 0.1462,
+      "success_rate_min": 0.0,
+      "success_rate_max": 0.6667,
+      "detection_rate_mean": 0.9448,
+      "detection_rate_std": 0.1411,
+      "detection_rate_min": 0.0,
+      "detection_rate_max": 1.0,
+      "data_exfiltration_rate": 0.0
+    },
+    "insider": {
+      "sample_size": 1515,
+      "hosts_compromised_mean": 1,
+      "hosts_compromised_std": 0.0,
+      "hosts_compromised_min": 1,
+      "hosts_compromised_max": 1,
+      "success_rate_mean": 0.703,
+      "success_rate_std": 0.2664,
+      "success_rate_min": 0.0,
+      "success_rate_max": 1.0,
+      "detection_rate_mean": 0.3395,
+      "detection_rate_std": 0.2802,
+      "detection_rate_min": 0.0,
+      "detection_rate_max": 1.0,
+      "data_exfiltration_rate": 0.0
+    }
+  },
+  "path_frequency": {
+    "port_scan->port_scan->port_scan": {
+      "frequency": 0.4073,
+      "count": 2468,
+      "success_rate": 0.0
+    },
+    "execute_command->execute_command->execute_command": {
+      "frequency": 0.25,
+      "count": 1515,
+      "success_rate": 1.0
+    },
+    "osint_enum->osint_enum->osint_enum": {
+      "frequency": 0.2333,
+      "count": 1414,
+      "success_rate": 0.0
+    },
+    "port_scan->brute_force_creds->brute_force_creds": {
+      "frequency": 0.0294,
+      "count": 178,
+      "success_rate": 0.0
+    },
+    "phishing->port_scan->port_scan": {
+      "frequency": 0.0281,
+      "count": 170,
+      "success_rate": 0.0
+    },
+    "phishing->phishing->phishing": {
+      "frequency": 0.0167,
+      "count": 101,
+      "success_rate": 0.2178
+    },
+    "port_scan->port_scan->brute_force_creds": {
+      "frequency": 0.013,
+      "count": 79,
+      "success_rate": 0.0
+    },
+    "osint_enum->osint_enum->exploit_public_service": {
+      "frequency": 0.0092,
+      "count": 56,
+      "success_rate": 0.2679
+    },
+    "osint_enum->osint_enum->port_scan": {
+      "frequency": 0.0074,
+      "count": 45,
+      "success_rate": 0.0
+    },
+    "phishing->port_scan->brute_force_creds": {
+      "frequency": 0.004,
+      "count": 24,
+      "success_rate": 0.0
+    },
+    "phishing->brute_force_creds->brute_force_creds": {
+      "frequency": 0.0013,
+      "count": 8,
+      "success_rate": 1.0
+    },
+    "port_scan->brute_force_creds->port_scan": {
+      "frequency": 0.0002,
+      "count": 1,
+      "success_rate": 0.0
+    },
+    "port_scan->brute_force_creds->exploit_public_service": {
+      "frequency": 0.0002,
+      "count": 1,
+      "success_rate": 0.0
+    }
+  },
+  "defense_effectiveness": {
+    "firewall": {
+      "block_rate": 0.9485,
+      "times_tested": 30300,
+      "times_blocked": 28740,
+      "confidence_interval_95": [
+        0.946,
+        0.9509
+      ]
+    },
+    "mfa": {
+      "block_rate": 0.9999,
+      "times_tested": 18180,
+      "times_blocked": 18178,
+      "confidence_interval_95": [
+        0.9996,
+        1.0
+      ]
+    },
+    "patching": {
+      "block_rate": 0.9999,
+      "times_tested": 18180,
+      "times_blocked": 18178,
+      "confidence_interval_95": [
+        0.9996,
+        1.0
+      ]
+    },
+    "edr": {
+      "block_rate": 1.0,
+      "times_tested": 12120,
+      "times_blocked": 12120,
+      "confidence_interval_95": [
+        0.9997,
+        1
+      ]
+    }
+  },
+  "defender_statistics": {
+    "sample_size": 1515,
+    "blocks_mean": 0.8851,
+    "blocks_std": 0.9671,
+    "blocks_min": 0,
+    "blocks_max": 3,
+    "actions_mean": 3,
+    "actions_std": 0.0,
+    "actions_min": 3,
+    "actions_max": 3
+  },
+  "vulnerability_ranking": [
+    {
+      "vuln": "CVE-2024-38077",
+      "host": "10.0.1.10",
+      "hostname": "workstation-01",
+      "exploit_rate": 0.25,
+      "exploit_count": 1515,
+      "impact_score": 5,
+      "priority_score": 1.25,
+      "confidence_interval_95": [
+        0.2393,
+        0.2611
+      ],
+      "priority": 1
+    },
+    {
+      "vuln": "CVE-2024-7347",
+      "host": "10.0.0.10",
+      "hostname": "web-server-01",
+      "exploit_rate": 0.0142,
+      "exploit_count": 86,
+      "impact_score": 8,
+      "priority_score": 0.1135,
+      "confidence_interval_95": [
+        0.0115,
+        0.0175
+      ],
+      "priority": 2
+    }
+  ],
+  "statistical_confidence": {
+    "total_agent_runs": 7575,
+    "convergence_achieved": false,
+    "convergence_batch": -1,
+    "batch_success_rate_series": [
+      0.75,
+      0.7778,
+      0.5833,
+      0.75,
+      0.7222
+    ]
+  },
+  "emergent_discoveries": [],
+  "cross_batch_intelligence": {
+    "batch_evolution": [
+      {
+        "batch": 0,
+        "hosts_compromised": 4,
+        "success_rate": 0.75,
+        "unique_strategies": 5
+      },
+      {
+        "batch": 1,
+        "hosts_compromised": 3,
+        "success_rate": 0.7778,
+        "unique_strategies": 5
+      },
+      {
+        "batch": 2,
+        "hosts_compromised": 4,
+        "success_rate": 0.5833,
+        "unique_strategies": 7
+      },
+      {
+        "batch": 3,
+        "hosts_compromised": 3,
+        "success_rate": 0.75,
+        "unique_strategies": 5
+      },
+      {
+        "batch": 4,
+        "hosts_compromised": 3,
+        "success_rate": 0.7222,
+        "unique_strategies": 4
+      }
+    ],
+    "attacker_learning_trend": "degrading",
+    "early_batch_success_rate": 0.7639,
+    "late_batch_success_rate": 0.6852,
+    "early_batch_compromises": 3.5,
+    "late_batch_compromises": 3.33,
+    "top_strategies": [
+      {
+        "strategy": "insider: execute_command->execute_command->execute_command",
+        "total_compromises": 15
+      },
+      {
+        "strategy": "ransomware: phishing->brute_force_creds->brute_force_creds",
+        "total_compromises": 2
+      }
+    ],
+    "total_unique_strategies": 2,
+    "strategic_diversity_score": 0.1176
+  },
+  "environment": {
+    "name": "AI-SOC Default Environment",
+    "hosts": {
+      "10.0.0.10": {
+        "ip": "10.0.0.10",
+        "hostname": "web-server-01",
+        "os": "linux",
+        "criticality": "high",
+        "services": [
+          {
+            "name": "nginx",
+            "port": 80,
+            "version": "1.24.0",
+            "exposed_externally": true,
+            "cves": [
+              "CVE-2024-7347"
+            ]
+          },
+          {
+            "name": "nginx-ssl",
+            "port": 443,
+            "version": "1.24.0",
+            "exposed_externally": true,
+            "cves": [
+              "CVE-2024-7347"
+            ]
+          },
+          {
+            "name": "ssh",
+            "port": 22,
+            "version": "8.9p1",
+            "exposed_externally": false,
+            "cves": []
+          }
+        ],
+        "defenses": {
+          "edr_present": false,
+          "mfa_enabled": false,
+          "firewall_enabled": true,
+          "patched": false,
+          "wazuh_agent": true
+        },
+        "compromised": false,
+        "admin_access": false,
+        "persistence_installed": false
+      },
+      "10.0.0.20": {
+        "ip": "10.0.0.20",
+        "hostname": "mail-server-01",
+        "os": "linux",
+        "criticality": "high",
+        "services": [
+          {
+            "name": "postfix",
+            "port": 25,
+            "version": "3.7.4",
+            "exposed_externally": true,
+            "cves": []
+          },
+          {
+            "name": "dovecot",
+            "port": 993,
+            "version": "2.3.20",
+            "exposed_externally": true,
+            "cves": []
+          },
+          {
+            "name": "ssh",
+            "port": 22,
+            "version": "8.9p1",
+            "exposed_externally": false,
+            "cves": []
+          }
+        ],
+        "defenses": {
+          "edr_present": false,
+          "mfa_enabled": true,
+          "firewall_enabled": true,
+          "patched": true,
+          "wazuh_agent": true
+        },
+        "compromised": false,
+        "admin_access": false,
+        "persistence_installed": false
+      },
+      "10.0.1.10": {
+        "ip": "10.0.1.10",
+        "hostname": "workstation-01",
+        "os": "windows",
+        "criticality": "medium",
+        "services": [
+          {
+            "name": "rdp",
+            "port": 3389,
+            "version": "10.0",
+            "exposed_externally": false,
+            "cves": [
+              "CVE-2024-38077"
+            ]
+          },
+          {
+            "name": "smb",
+            "port": 445,
+            "version": "3.1.1",
+            "exposed_externally": false,
+            "cves": []
+          }
+        ],
+        "defenses": {
+          "edr_present": false,
+          "mfa_enabled": false,
+          "firewall_enabled": true,
+          "patched": false,
+          "wazuh_agent": false
+        },
+        "compromised": false,
+        "admin_access": false,
+        "persistence_installed": false
+      },
+      "10.0.1.20": {
+        "ip": "10.0.1.20",
+        "hostname": "file-server-01",
+        "os": "windows",
+        "criticality": "high",
+        "services": [
+          {
+            "name": "smb",
+            "port": 445,
+            "version": "3.1.1",
+            "exposed_externally": false,
+            "cves": []
+          },
+          {
+            "name": "rdp",
+            "port": 3389,
+            "version": "10.0",
+            "exposed_externally": false,
+            "cves": []
+          }
+        ],
+        "defenses": {
+          "edr_present": false,
+          "mfa_enabled": false,
+          "firewall_enabled": false,
+          "patched": true,
+          "wazuh_agent": true
+        },
+        "compromised": false,
+        "admin_access": false,
+        "persistence_installed": false
+      },
+      "10.0.2.10": {
+        "ip": "10.0.2.10",
+        "hostname": "prod-db-01",
+        "os": "linux",
+        "criticality": "critical",
+        "services": [
+          {
+            "name": "postgresql",
+            "port": 5432,
+            "version": "15.2",
+            "exposed_externally": false,
+            "cves": [
+              "CVE-2024-10978"
+            ]
+          },
+          {
+            "name": "ssh",
+            "port": 22,
+            "version": "9.0p1",
+            "exposed_externally": false,
+            "cves": []
+          }
+        ],
+        "defenses": {
+          "edr_present": true,
+          "mfa_enabled": true,
+          "firewall_enabled": true,
+          "patched": false,
+          "wazuh_agent": true
+        },
+        "compromised": false,
+        "admin_access": false,
+        "persistence_installed": false
+      },
+      "10.0.2.20": {
+        "ip": "10.0.2.20",
+        "hostname": "dc-01",
+        "os": "windows",
+        "criticality": "critical",
+        "services": [
+          {
+            "name": "ldap",
+            "port": 389,
+            "version": "2022",
+            "exposed_externally": false,
+            "cves": []
+          },
+          {
+            "name": "kerberos",
+            "port": 88,
+            "version": "2022",
+            "exposed_externally": false,
+            "cves": []
+          },
+          {
+            "name": "rdp",
+            "port": 3389,
+            "version": "10.0",
+            "exposed_externally": false,
+            "cves": []
+          },
+          {
+            "name": "smb",
+            "port": 445,
+            "version": "3.1.1",
+            "exposed_externally": false,
+            "cves": []
+          }
+        ],
+        "defenses": {
+          "edr_present": true,
+          "mfa_enabled": true,
+          "firewall_enabled": true,
+          "patched": true,
+          "wazuh_agent": true
+        },
+        "compromised": false,
+        "admin_access": false,
+        "persistence_installed": false
+      }
+    },
+    "segments": {
+      "dmz": {
+        "hosts": [
+          "10.0.0.10",
+          "10.0.0.20"
+        ],
+        "reachable_from": [
+          "external",
+          "internal"
+        ]
+      },
+      "internal": {
+        "hosts": [
+          "10.0.1.10",
+          "10.0.1.20"
+        ],
+        "reachable_from": [
+          "dmz",
+          "critical"
+        ]
+      },
+      "critical": {
+        "hosts": [
+          "10.0.2.10",
+          "10.0.2.20"
+        ],
+        "reachable_from": [
+          "internal"
+        ]
+      }
+    },
+    "compromised_hosts": [],
+    "isolated_hosts": [],
+    "blocked_ips": [],
+    "credentials_revoked": false
+  }
+}
