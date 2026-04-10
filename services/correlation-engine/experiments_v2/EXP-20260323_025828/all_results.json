@@ -1,0 +1,1457 @@
+{
+  "experiment_run_id": "EXP-20260323_025828",
+  "started_at": "2026-03-23T02:58:28.657659",
+  "config": {
+    "scales": [
+      10,
+      25,
+      50,
+      100,
+      200,
+      500
+    ],
+    "batches": 5,
+    "timesteps": 6,
+    "leaders_per_archetype": 3,
+    "ollama_model": "llama3.2:3b",
+    "quick_mode": false
+  },
+  "experiments": {
+    "1_scale_vs_discovery": {
+      "experiment": "Scale vs Discovery",
+      "hypothesis": "Larger swarms discover more unique attack paths and emergent strategies",
+      "scales_tested": 6,
+      "results": [
+        {
+          "swarm_size": 10,
+          "total_agents": 825,
+          "duration_seconds": 671.8,
+          "unique_paths": 4,
+          "strategic_diversity": 0.2,
+          "emergent_discoveries": 0,
+          "emergent_details": [],
+          "convergence_achieved": false,
+          "convergence_batch": -1,
+          "overall_compromise_rate": 0.0429,
+          "host_compromise_rates": {
+            "10.0.0.10": 0.003,
+            "10.0.0.20": 0.0045,
+            "10.0.1.10": 0.25,
+            "10.0.1.20": 0.0,
+            "10.0.2.10": 0.0,
+            "10.0.2.20": 0.0
+          },
+          "host_confidence_intervals": {
+            "10.0.0.10": [
+              0.0008,
+              0.011
+            ],
+            "10.0.0.20": [
+              0.0015,
+              0.0133
+            ],
+            "10.0.1.10": [
+              0.2185,
+              0.2844
+            ],
+            "10.0.1.20": [
+              0,
+              0.0058
+            ],
+            "10.0.2.10": [
+              0,
+              0.0058
+            ],
+            "10.0.2.20": [
+              0,
+              0.0058
+            ]
+          },
+          "attacker_learning_trend": "stable",
+          "batch_evolution": [
+            {
+              "batch": 0,
+              "hosts_compromised": 4,
+              "success_rate": 0.4306,
+              "unique_strategies": 6
+            },
+            {
+              "batch": 1,
+              "hosts_compromised": 3,
+              "success_rate": 0.5417,
+              "unique_strategies": 6
+            },
+            {
+              "batch": 2,
+              "hosts_compromised": 3,
+              "success_rate": 0.5833,
+              "unique_strategies": 7
+            },
+            {
+              "batch": 3,
+              "hosts_compromised": 4,
+              "success_rate": 0.4444,
+              "unique_strategies": 5
+            },
+            {
+              "batch": 4,
+              "hosts_compromised": 6,
+              "success_rate": 0.5139,
+              "unique_strategies": 5
+            }
+          ],
+          "archetype_stats": {
+            "opportunist": {
+              "success_rate_mean": 0.0394,
+              "hosts_compromised_mean": 0
+            },
+            "apt": {
+              "success_rate_mean": 0.0434,
+              "hosts_compromised_mean": 0
+            },
+            "ransomware": {
+              "success_rate_mean": 0.0182,
+              "hosts_compromised_mean": 0.0303
+            },
+            "insider": {
+              "success_rate_mean": 0.5758,
+              "hosts_compromised_mean": 1
+            }
+          }
+        },
+        {
+          "swarm_size": 25,
+          "total_agents": 1950,
+          "duration_seconds": 668.1,
+          "unique_paths": 3,
+          "strategic_diversity": 0.1765,
+          "emergent_discoveries": 0,
+          "emergent_details": [],
+          "convergence_achieved": false,
+          "convergence_batch": -1,
+          "overall_compromise_rate": 0.0419,
+          "host_compromise_rates": {
+            "10.0.0.10": 0.0006,
+            "10.0.0.20": 0.0006,
+            "10.0.1.10": 0.25,
+            "10.0.1.20": 0.0,
+            "10.0.2.10": 0.0,
+            "10.0.2.20": 0.0
+          },
+          "host_confidence_intervals": {
+            "10.0.0.10": [
+              0.0001,
+              0.0036
+            ],
+            "10.0.0.20": [
+              0.0001,
+              0.0036
+            ],
+            "10.0.1.10": [
+              0.2291,
+              0.2721
+            ],
+            "10.0.1.20": [
+              0,
+              0.0025
+            ],
+            "10.0.2.10": [
+              0,
+              0.0025
+            ],
+            "10.0.2.20": [
+              0,
+              0.0025
+            ]
+          },
+          "attacker_learning_trend": "degrading",
+          "batch_evolution": [
+            {
+              "batch": 0,
+              "hosts_compromised": 3,
+              "success_rate": 0.5556,
+              "unique_strategies": 6
+            },
+            {
+              "batch": 1,
+              "hosts_compromised": 3,
+              "success_rate": 0.5556,
+              "unique_strategies": 5
+            },
+            {
+              "batch": 2,
+              "hosts_compromised": 3,
+              "success_rate": 0.375,
+              "unique_strategies": 4
+            },
+            {
+              "batch": 3,
+              "hosts_compromised": 5,
+              "success_rate": 0.5694,
+              "unique_strategies": 7
+            },
+            {
+              "batch": 4,
+              "hosts_compromised": 3,
+              "success_rate": 0.5417,
+              "unique_strategies": 6
+            }
+          ],
+          "archetype_stats": {
+            "opportunist": {
+              "success_rate_mean": 0.0218,
+              "hosts_compromised_mean": 0
+            },
+            "apt": {
+              "success_rate_mean": 0.0192,
+              "hosts_compromised_mean": 0
+            },
+            "ransomware": {
+              "success_rate_mean": 0.0068,
+              "hosts_compromised_mean": 0.0051
+            },
+            "insider": {
+              "success_rate_mean": 0.565,
+              "hosts_compromised_mean": 1
+            }
+          }
+        },
+        {
+          "swarm_size": 50,
+          "total_agents": 3825,
+          "duration_seconds": 677.7,
+          "unique_paths": 1,
+          "strategic_diversity": 0.0667,
+          "emergent_discoveries": 0,
+          "emergent_details": [],
+          "convergence_achieved": false,
+          "convergence_batch": -1,
+          "overall_compromise_rate": 0.0434,
+          "host_compromise_rates": {
+            "10.0.0.10": 0.0105,
+            "10.0.0.20": 0.0,
+            "10.0.1.10": 0.25,
+            "10.0.1.20": 0.0,
+            "10.0.2.10": 0.0,
+            "10.0.2.20": 0.0
+          },
+          "host_confidence_intervals": {
+            "10.0.0.10": [
+              0.0074,
+              0.0147
+            ],
+            "10.0.0.20": [
+              0,
+              0.0013
+            ],
+            "10.0.1.10": [
+              0.235,
+              0.2656
+            ],
+            "10.0.1.20": [
+              0,
+              0.0013
+            ],
+            "10.0.2.10": [
+              0,
+              0.0013
+            ],
+            "10.0.2.20": [
+              0,
+              0.0013
+            ]
+          },
+          "attacker_learning_trend": "stable",
+          "batch_evolution": [
+            {
+              "batch": 0,
+              "hosts_compromised": 3,
+              "success_rate": 0.5417,
+              "unique_strategies": 6
+            },
+            {
+              "batch": 1,
+              "hosts_compromised": 3,
+              "success_rate": 0.4583,
+              "unique_strategies": 7
+            },
+            {
+              "batch": 2,
+              "hosts_compromised": 3,
+              "success_rate": 0.5694,
+              "unique_strategies": 6
+            },
+            {
+              "batch": 3,
+              "hosts_compromised": 3,
+              "success_rate": 0.4722,
+              "unique_strategies": 7
+            },
+            {
+              "batch": 4,
+              "hosts_compromised": 3,
+              "success_rate": 0.4861,
+              "unique_strategies": 6
+            }
+          ],
+          "archetype_stats": {
+            "opportunist": {
+              "success_rate_mean": 0.1231,
+              "hosts_compromised_mean": 0
+            },
+            "apt": {
+              "success_rate_mean": 0.1405,
+              "hosts_compromised_mean": 0
+            },
+            "ransomware": {
+              "success_rate_mean": 0.0412,
+              "hosts_compromised_mean": 0.0418
+            },
+            "insider": {
+              "success_rate_mean": 0.5623,
+              "hosts_compromised_mean": 1
+            }
+          }
+        },
+        {
+          "swarm_size": 100,
+          "total_agents": 7575,
+          "duration_seconds": 731.9,
+          "unique_paths": 3,
+          "strategic_diversity": 0.1579,
+          "emergent_discoveries": 0,
+          "emergent_details": [],
+          "convergence_achieved": false,
+          "convergence_batch": -1,
+          "overall_compromise_rate": 0.043,
+          "host_compromise_rates": {
+            "10.0.0.10": 0.0076,
+            "10.0.0.20": 0.0003,
+            "10.0.1.10": 0.25,
+            "10.0.1.20": 0.0,
+            "10.0.2.10": 0.0,
+            "10.0.2.20": 0.0
+          },
+          "host_confidence_intervals": {
+            "10.0.0.10": [
+              0.0057,
+              0.0101
+            ],
+            "10.0.0.20": [
+              0.0001,
+              0.0012
+            ],
+            "10.0.1.10": [
+              0.2393,
+              0.2611
+            ],
+            "10.0.1.20": [
+              0,
+              0.0006
+            ],
+            "10.0.2.10": [
+              0,
+              0.0006
+            ],
+            "10.0.2.20": [
+              0,
+              0.0006
+            ]
+          },
+          "attacker_learning_trend": "stable",
+          "batch_evolution": [
+            {
+              "batch": 0,
+              "hosts_compromised": 6,
+              "success_rate": 0.625,
+              "unique_strategies": 5
+            },
+            {
+              "batch": 1,
+              "hosts_compromised": 3,
+              "success_rate": 0.4722,
+              "unique_strategies": 6
+            },
+            {
+              "batch": 2,
+              "hosts_compromised": 3,
+              "success_rate": 0.6111,
+              "unique_strategies": 4
+            },
+            {
+              "batch": 3,
+              "hosts_compromised": 4,
+              "success_rate": 0.5833,
+              "unique_strategies": 5
+            },
+            {
+              "batch": 4,
+              "hosts_compromised": 3,
+              "success_rate": 0.4861,
+              "unique_strategies": 7
+            }
+          ],
+          "archetype_stats": {
+            "opportunist": {
+              "success_rate_mean": 0.1081,
+              "hosts_compromised_mean": 0
+            },
+            "apt": {
+              "success_rate_mean": 0.1358,
+              "hosts_compromised_mean": 0
+            },
+            "ransomware": {
+              "success_rate_mean": 0.0382,
+              "hosts_compromised_mean": 0.0317
+            },
+            "insider": {
+              "success_rate_mean": 0.5598,
+              "hosts_compromised_mean": 1
+            }
+          }
+        },
+        {
+          "swarm_size": 200,
+          "total_agents": 15075,
+          "duration_seconds": 650.2,
+          "unique_paths": 3,
+          "strategic_diversity": 0.1765,
+          "emergent_discoveries": 0,
+          "emergent_details": [],
+          "convergence_achieved": false,
+          "convergence_batch": -1,
+          "overall_compromise_rate": 0.0417,
+          "host_compromise_rates": {
+            "10.0.0.10": 0.0,
+            "10.0.0.20": 0.0002,
+            "10.0.1.10": 0.25,
+            "10.0.1.20": 0.0,
+            "10.0.2.10": 0.0,
+            "10.0.2.20": 0.0
+          },
+          "host_confidence_intervals": {
+            "10.0.0.10": [
+              0,
+              0.0003
+            ],
+            "10.0.0.20": [
+              0.0,
+              0.0006
+            ],
+            "10.0.1.10": [
+              0.2424,
+              0.2578
+            ],
+            "10.0.1.20": [
+              0,
+              0.0003
+            ],
+            "10.0.2.10": [
+              0,
+              0.0003
+            ],
+            "10.0.2.20": [
+              0,
+              0.0003
+            ]
+          },
+          "attacker_learning_trend": "stable",
+          "batch_evolution": [
+            {
+              "batch": 0,
+              "hosts_compromised": 3,
+              "success_rate": 0.4722,
+              "unique_strategies": 7
+            },
+            {
+              "batch": 1,
+              "hosts_compromised": 3,
+              "success_rate": 0.4722,
+              "unique_strategies": 5
+            },
+            {
+              "batch": 2,
+              "hosts_compromised": 3,
+              "success_rate": 0.4028,
+              "unique_strategies": 8
+            },
+            {
+              "batch": 3,
+              "hosts_compromised": 5,
+              "success_rate": 0.4861,
+              "unique_strategies": 6
+            },
+            {
+              "batch": 4,
+              "hosts_compromised": 3,
+              "success_rate": 0.4722,
+              "unique_strategies": 5
+            }
+          ],
+          "archetype_stats": {
+            "opportunist": {
+              "success_rate_mean": 0.0014,
+              "hosts_compromised_mean": 0
+            },
+            "apt": {
+              "success_rate_mean": 0.0019,
+              "hosts_compromised_mean": 0
+            },
+            "ransomware": {
+              "success_rate_mean": 0.0008,
+              "hosts_compromised_mean": 0.0007
+            },
+            "insider": {
+              "success_rate_mean": 0.7005,
+              "hosts_compromised_mean": 1
+            }
+          }
+        },
+        {
+          "swarm_size": 500,
+          "total_agents": 37575,
+          "duration_seconds": 580.6,
+          "unique_paths": 2,
+          "strategic_diversity": 0.1111,
+          "emergent_discoveries": 0,
+          "emergent_details": [],
+          "convergence_achieved": false,
+          "convergence_batch": -1,
+          "overall_compromise_rate": 0.0417,
+          "host_compromise_rates": {
+            "10.0.0.10": 0.0001,
+            "10.0.0.20": 0.0,
+            "10.0.1.10": 0.25,
+            "10.0.1.20": 0.0,
+            "10.0.2.10": 0.0,
+            "10.0.2.20": 0.0
+          },
+          "host_confidence_intervals": {
+            "10.0.0.10": [
+              0.0,
+              0.0002
+            ],
+            "10.0.0.20": [
+              0.0,
+              0.0002
+            ],
+            "10.0.1.10": [
+              0.2451,
+              0.2549
+            ],
+            "10.0.1.20": [
+              0,
+              0.0001
+            ],
+            "10.0.2.10": [
+              0,
+              0.0001
+            ],
+            "10.0.2.20": [
+              0,
+              0.0001
+            ]
+          },
+          "attacker_learning_trend": "improving",
+          "batch_evolution": [
+            {
+              "batch": 0,
+              "hosts_compromised": 3,
+              "success_rate": 0.4306,
+              "unique_strategies": 4
+            },
+            {
+              "batch": 1,
+              "hosts_compromised": 3,
+              "success_rate": 0.4444,
+              "unique_strategies": 5
+            },
+            {
+              "batch": 2,
+              "hosts_compromised": 3,
+              "success_rate": 0.5,
+              "unique_strategies": 6
+            },
+            {
+              "batch": 3,
+              "hosts_compromised": 5,
+              "success_rate": 0.625,
+              "unique_strategies": 6
+            },
+            {
+              "batch": 4,
+              "hosts_compromised": 4,
+              "success_rate": 0.5417,
+              "unique_strategies": 5
+            }
+          ],
+          "archetype_stats": {
+            "opportunist": {
+              "success_rate_mean": 0.0008,
+              "hosts_compromised_mean": 0
+            },
+            "apt": {
+              "success_rate_mean": 0.0008,
+              "hosts_compromised_mean": 0
+            },
+            "ransomware": {
+              "success_rate_mean": 0.0005,
+              "hosts_compromised_mean": 0.0004
+            },
+            "insider": {
+              "success_rate_mean": 0.701,
+              "hosts_compromised_mean": 1
+            }
+          }
+        }
+      ],
+      "analysis": {
+        "path_count_trend": "flat_or_decreasing",
+        "emergent_discovery_trend": "flat_or_decreasing",
+        "min_convergent_swarm_size": null,
+        "discovery_per_agent": {
+          "10": 0.0,
+          "25": 0.0,
+          "50": 0.0,
+          "100": 0.0,
+          "200": 0.0,
+          "500": 0.0
+        },
+        "compromise_rate_range": [
+          0.0417,
+          0.0434
+        ],
+        "conclusion": "Unique paths do not clearly increase with swarm size. Emergent discoveries do not clearly increase. No convergence achieved at tested scales."
+      }
+    },
+    "2_prediction_accuracy": {
+      "experiment": "Prediction Accuracy",
+      "hypothesis": "Swarm compromise rates predict which hosts are truly vulnerable",
+      "ground_truth": {
+        "10.0.0.10": {
+          "vulnerable": true,
+          "reasoning": "CVE-2024-7347 in nginx, externally exposed in DMZ, no EDR, no MFA, unpatched"
+        },
+        "10.0.0.20": {
+          "vulnerable": false,
+          "reasoning": "No known CVEs, MFA enabled, Wazuh monitored \u2014 no direct exploit path"
+        },
+        "10.0.1.10": {
+          "vulnerable": true,
+          "reasoning": "CVE-2024-38077 (Windows RDP), no monitoring, no EDR, unpatched"
+        },
+        "10.0.1.20": {
+          "vulnerable": true,
+          "reasoning": "No firewall, no MFA, SMB/RDP exposed \u2014 easy lateral movement target"
+        },
+        "10.0.2.10": {
+          "vulnerable": true,
+          "reasoning": "CVE-2024-10978 (PostgreSQL) unpatched despite EDR+MFA layered defense"
+        },
+        "10.0.2.20": {
+          "vulnerable": false,
+          "reasoning": "Fully hardened: no CVEs, patched, MFA, EDR, Wazuh \u2014 the control case"
+        }
+      },
+      "best_threshold": 0.1,
+      "best_results": {
+        "accuracy": 0.5,
+        "precision": 1.0,
+        "recall": 0.25,
+        "f1_score": 0.4,
+        "confusion_matrix": {
+          "tp": 1,
+          "fp": 0,
+          "tn": 2,
+          "fn": 3
+        }
+      },
+      "all_thresholds": [
+        {
+          "threshold": 0.1,
+          "accuracy": 0.5,
+          "precision": 1.0,
+          "recall": 0.25,
+          "f1_score": 0.4,
+          "confusion_matrix": {
+            "tp": 1,
+            "fp": 0,
+            "tn": 2,
+            "fn": 3
+          },
+          "predictions": [
+            {
+              "host": "10.0.0.10",
+              "hostname": "web-server-01",
+              "compromise_rate": 0.0076,
+              "ci_95": [
+                0.0057,
+                0.0101
+              ],
+              "predicted_vulnerable": false,
+              "ground_truth_vulnerable": true,
+              "ground_truth_reasoning": "CVE-2024-7347 in nginx, externally exposed in DMZ, no EDR, no MFA, unpatched",
+              "correct": false
+            },
+            {
+              "host": "10.0.0.20",
+              "hostname": "mail-server-01",
+              "compromise_rate": 0.0003,
+              "ci_95": [
+                0.0001,
+                0.0012
+              ],
+              "predicted_vulnerable": false,
+              "ground_truth_vulnerable": false,
+              "ground_truth_reasoning": "No known CVEs, MFA enabled, Wazuh monitored \u2014 no direct exploit path",
+              "correct": true
+            },
+            {
+              "host": "10.0.1.10",
+              "hostname": "workstation-01",
+              "compromise_rate": 0.25,
+              "ci_95": [
+                0.2393,
+                0.2611
+              ],
+              "predicted_vulnerable": true,
+              "ground_truth_vulnerable": true,
+              "ground_truth_reasoning": "CVE-2024-38077 (Windows RDP), no monitoring, no EDR, unpatched",
+              "correct": true
+            },
+            {
+              "host": "10.0.1.20",
+              "hostname": "file-server-01",
+              "compromise_rate": 0.0,
+              "ci_95": [
+                0,
+                0.0006
+              ],
+              "predicted_vulnerable": false,
+              "ground_truth_vulnerable": true,
+              "ground_truth_reasoning": "No firewall, no MFA, SMB/RDP exposed \u2014 easy lateral movement target",
+              "correct": false
+            },
+            {
+              "host": "10.0.2.10",
+              "hostname": "prod-db-01",
+              "compromise_rate": 0.0,
+              "ci_95": [
+                0,
+                0.0006
+              ],
+              "predicted_vulnerable": false,
+              "ground_truth_vulnerable": true,
+              "ground_truth_reasoning": "CVE-2024-10978 (PostgreSQL) unpatched despite EDR+MFA layered defense",
+              "correct": false
+            },
+            {
+              "host": "10.0.2.20",
+              "hostname": "dc-01",
+              "compromise_rate": 0.0,
+              "ci_95": [
+                0,
+                0.0006
+              ],
+              "predicted_vulnerable": false,
+              "ground_truth_vulnerable": false,
+              "ground_truth_reasoning": "Fully hardened: no CVEs, patched, MFA, EDR, Wazuh \u2014 the control case",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "threshold": 0.2,
+          "accuracy": 0.5,
+          "precision": 1.0,
+          "recall": 0.25,
+          "f1_score": 0.4,
+          "confusion_matrix": {
+            "tp": 1,
+            "fp": 0,
+            "tn": 2,
+            "fn": 3
+          },
+          "predictions": [
+            {
+              "host": "10.0.0.10",
+              "hostname": "web-server-01",
+              "compromise_rate": 0.0076,
+              "ci_95": [
+                0.0057,
+                0.0101
+              ],
+              "predicted_vulnerable": false,
+              "ground_truth_vulnerable": true,
+              "ground_truth_reasoning": "CVE-2024-7347 in nginx, externally exposed in DMZ, no EDR, no MFA, unpatched",
+              "correct": false
+            },
+            {
+              "host": "10.0.0.20",
+              "hostname": "mail-server-01",
+              "compromise_rate": 0.0003,
+              "ci_95": [
+                0.0001,
+                0.0012
+              ],
+              "predicted_vulnerable": false,
+              "ground_truth_vulnerable": false,
+              "ground_truth_reasoning": "No known CVEs, MFA enabled, Wazuh monitored \u2014 no direct exploit path",
+              "correct": true
+            },
+            {
+              "host": "10.0.1.10",
+              "hostname": "workstation-01",
+              "compromise_rate": 0.25,
+              "ci_95": [
+                0.2393,
+                0.2611
+              ],
+              "predicted_vulnerable": true,
+              "ground_truth_vulnerable": true,
+              "ground_truth_reasoning": "CVE-2024-38077 (Windows RDP), no monitoring, no EDR, unpatched",
+              "correct": true
+            },
+            {
+              "host": "10.0.1.20",
+              "hostname": "file-server-01",
+              "compromise_rate": 0.0,
+              "ci_95": [
+                0,
+                0.0006
+              ],
+              "predicted_vulnerable": false,
+              "ground_truth_vulnerable": true,
+              "ground_truth_reasoning": "No firewall, no MFA, SMB/RDP exposed \u2014 easy lateral movement target",
+              "correct": false
+            },
+            {
+              "host": "10.0.2.10",
+              "hostname": "prod-db-01",
+              "compromise_rate": 0.0,
+              "ci_95": [
+                0,
+                0.0006
+              ],
+              "predicted_vulnerable": false,
+              "ground_truth_vulnerable": true,
+              "ground_truth_reasoning": "CVE-2024-10978 (PostgreSQL) unpatched despite EDR+MFA layered defense",
+              "correct": false
+            },
+            {
+              "host": "10.0.2.20",
+              "hostname": "dc-01",
+              "compromise_rate": 0.0,
+              "ci_95": [
+                0,
+                0.0006
+              ],
+              "predicted_vulnerable": false,
+              "ground_truth_vulnerable": false,
+              "ground_truth_reasoning": "Fully hardened: no CVEs, patched, MFA, EDR, Wazuh \u2014 the control case",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "threshold": 0.3,
+          "accuracy": 0.3333,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1_score": 0.0,
+          "confusion_matrix": {
+            "tp": 0,
+            "fp": 0,
+            "tn": 2,
+            "fn": 4
+          },
+          "predictions": [
+            {
+              "host": "10.0.0.10",
+              "hostname": "web-server-01",
+              "compromise_rate": 0.0076,
+              "ci_95": [
+                0.0057,
+                0.0101
+              ],
+              "predicted_vulnerable": false,
+              "ground_truth_vulnerable": true,
+              "ground_truth_reasoning": "CVE-2024-7347 in nginx, externally exposed in DMZ, no EDR, no MFA, unpatched",
+              "correct": false
+            },
+            {
+              "host": "10.0.0.20",
+              "hostname": "mail-server-01",
+              "compromise_rate": 0.0003,
+              "ci_95": [
+                0.0001,
+                0.0012
+              ],
+              "predicted_vulnerable": false,
+              "ground_truth_vulnerable": false,
+              "ground_truth_reasoning": "No known CVEs, MFA enabled, Wazuh monitored \u2014 no direct exploit path",
+              "correct": true
+            },
+            {
+              "host": "10.0.1.10",
+              "hostname": "workstation-01",
+              "compromise_rate": 0.25,
+              "ci_95": [
+                0.2393,
+                0.2611
+              ],
+              "predicted_vulnerable": false,
+              "ground_truth_vulnerable": true,
+              "ground_truth_reasoning": "CVE-2024-38077 (Windows RDP), no monitoring, no EDR, unpatched",
+              "correct": false
+            },
+            {
+              "host": "10.0.1.20",
+              "hostname": "file-server-01",
+              "compromise_rate": 0.0,
+              "ci_95": [
+                0,
+                0.0006
+              ],
+              "predicted_vulnerable": false,
+              "ground_truth_vulnerable": true,
+              "ground_truth_reasoning": "No firewall, no MFA, SMB/RDP exposed \u2014 easy lateral movement target",
+              "correct": false
+            },
+            {
+              "host": "10.0.2.10",
+              "hostname": "prod-db-01",
+              "compromise_rate": 0.0,
+              "ci_95": [
+                0,
+                0.0006
+              ],
+              "predicted_vulnerable": false,
+              "ground_truth_vulnerable": true,
+              "ground_truth_reasoning": "CVE-2024-10978 (PostgreSQL) unpatched despite EDR+MFA layered defense",
+              "correct": false
+            },
+            {
+              "host": "10.0.2.20",
+              "hostname": "dc-01",
+              "compromise_rate": 0.0,
+              "ci_95": [
+                0,
+                0.0006
+              ],
+              "predicted_vulnerable": false,
+              "ground_truth_vulnerable": false,
+              "ground_truth_reasoning": "Fully hardened: no CVEs, patched, MFA, EDR, Wazuh \u2014 the control case",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "threshold": 0.4,
+          "accuracy": 0.3333,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1_score": 0.0,
+          "confusion_matrix": {
+            "tp": 0,
+            "fp": 0,
+            "tn": 2,
+            "fn": 4
+          },
+          "predictions": [
+            {
+              "host": "10.0.0.10",
+              "hostname": "web-server-01",
+              "compromise_rate": 0.0076,
+              "ci_95": [
+                0.0057,
+                0.0101
+              ],
+              "predicted_vulnerable": false,
+              "ground_truth_vulnerable": true,
+              "ground_truth_reasoning": "CVE-2024-7347 in nginx, externally exposed in DMZ, no EDR, no MFA, unpatched",
+              "correct": false
+            },
+            {
+              "host": "10.0.0.20",
+              "hostname": "mail-server-01",
+              "compromise_rate": 0.0003,
+              "ci_95": [
+                0.0001,
+                0.0012
+              ],
+              "predicted_vulnerable": false,
+              "ground_truth_vulnerable": false,
+              "ground_truth_reasoning": "No known CVEs, MFA enabled, Wazuh monitored \u2014 no direct exploit path",
+              "correct": true
+            },
+            {
+              "host": "10.0.1.10",
+              "hostname": "workstation-01",
+              "compromise_rate": 0.25,
+              "ci_95": [
+                0.2393,
+                0.2611
+              ],
+              "predicted_vulnerable": false,
+              "ground_truth_vulnerable": true,
+              "ground_truth_reasoning": "CVE-2024-38077 (Windows RDP), no monitoring, no EDR, unpatched",
+              "correct": false
+            },
+            {
+              "host": "10.0.1.20",
+              "hostname": "file-server-01",
+              "compromise_rate": 0.0,
+              "ci_95": [
+                0,
+                0.0006
+              ],
+              "predicted_vulnerable": false,
+              "ground_truth_vulnerable": true,
+              "ground_truth_reasoning": "No firewall, no MFA, SMB/RDP exposed \u2014 easy lateral movement target",
+              "correct": false
+            },
+            {
+              "host": "10.0.2.10",
+              "hostname": "prod-db-01",
+              "compromise_rate": 0.0,
+              "ci_95": [
+                0,
+                0.0006
+              ],
+              "predicted_vulnerable": false,
+              "ground_truth_vulnerable": true,
+              "ground_truth_reasoning": "CVE-2024-10978 (PostgreSQL) unpatched despite EDR+MFA layered defense",
+              "correct": false
+            },
+            {
+              "host": "10.0.2.20",
+              "hostname": "dc-01",
+              "compromise_rate": 0.0,
+              "ci_95": [
+                0,
+                0.0006
+              ],
+              "predicted_vulnerable": false,
+              "ground_truth_vulnerable": false,
+              "ground_truth_reasoning": "Fully hardened: no CVEs, patched, MFA, EDR, Wazuh \u2014 the control case",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "threshold": 0.5,
+          "accuracy": 0.3333,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1_score": 0.0,
+          "confusion_matrix": {
+            "tp": 0,
+            "fp": 0,
+            "tn": 2,
+            "fn": 4
+          },
+          "predictions": [
+            {
+              "host": "10.0.0.10",
+              "hostname": "web-server-01",
+              "compromise_rate": 0.0076,
+              "ci_95": [
+                0.0057,
+                0.0101
+              ],
+              "predicted_vulnerable": false,
+              "ground_truth_vulnerable": true,
+              "ground_truth_reasoning": "CVE-2024-7347 in nginx, externally exposed in DMZ, no EDR, no MFA, unpatched",
+              "correct": false
+            },
+            {
+              "host": "10.0.0.20",
+              "hostname": "mail-server-01",
+              "compromise_rate": 0.0003,
+              "ci_95": [
+                0.0001,
+                0.0012
+              ],
+              "predicted_vulnerable": false,
+              "ground_truth_vulnerable": false,
+              "ground_truth_reasoning": "No known CVEs, MFA enabled, Wazuh monitored \u2014 no direct exploit path",
+              "correct": true
+            },
+            {
+              "host": "10.0.1.10",
+              "hostname": "workstation-01",
+              "compromise_rate": 0.25,
+              "ci_95": [
+                0.2393,
+                0.2611
+              ],
+              "predicted_vulnerable": false,
+              "ground_truth_vulnerable": true,
+              "ground_truth_reasoning": "CVE-2024-38077 (Windows RDP), no monitoring, no EDR, unpatched",
+              "correct": false
+            },
+            {
+              "host": "10.0.1.20",
+              "hostname": "file-server-01",
+              "compromise_rate": 0.0,
+              "ci_95": [
+                0,
+                0.0006
+              ],
+              "predicted_vulnerable": false,
+              "ground_truth_vulnerable": true,
+              "ground_truth_reasoning": "No firewall, no MFA, SMB/RDP exposed \u2014 easy lateral movement target",
+              "correct": false
+            },
+            {
+              "host": "10.0.2.10",
+              "hostname": "prod-db-01",
+              "compromise_rate": 0.0,
+              "ci_95": [
+                0,
+                0.0006
+              ],
+              "predicted_vulnerable": false,
+              "ground_truth_vulnerable": true,
+              "ground_truth_reasoning": "CVE-2024-10978 (PostgreSQL) unpatched despite EDR+MFA layered defense",
+              "correct": false
+            },
+            {
+              "host": "10.0.2.20",
+              "hostname": "dc-01",
+              "compromise_rate": 0.0,
+              "ci_95": [
+                0,
+                0.0006
+              ],
+              "predicted_vulnerable": false,
+              "ground_truth_vulnerable": false,
+              "ground_truth_reasoning": "Fully hardened: no CVEs, patched, MFA, EDR, Wazuh \u2014 the control case",
+              "correct": true
+            }
+          ]
+        }
+      ],
+      "per_host_predictions": [
+        {
+          "host": "10.0.0.10",
+          "hostname": "web-server-01",
+          "compromise_rate": 0.0076,
+          "ci_95": [
+            0.0057,
+            0.0101
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": true,
+          "ground_truth_reasoning": "CVE-2024-7347 in nginx, externally exposed in DMZ, no EDR, no MFA, unpatched",
+          "correct": false
+        },
+        {
+          "host": "10.0.0.20",
+          "hostname": "mail-server-01",
+          "compromise_rate": 0.0003,
+          "ci_95": [
+            0.0001,
+            0.0012
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": false,
+          "ground_truth_reasoning": "No known CVEs, MFA enabled, Wazuh monitored \u2014 no direct exploit path",
+          "correct": true
+        },
+        {
+          "host": "10.0.1.10",
+          "hostname": "workstation-01",
+          "compromise_rate": 0.25,
+          "ci_95": [
+            0.2393,
+            0.2611
+          ],
+          "predicted_vulnerable": true,
+          "ground_truth_vulnerable": true,
+          "ground_truth_reasoning": "CVE-2024-38077 (Windows RDP), no monitoring, no EDR, unpatched",
+          "correct": true
+        },
+        {
+          "host": "10.0.1.20",
+          "hostname": "file-server-01",
+          "compromise_rate": 0.0,
+          "ci_95": [
+            0,
+            0.0006
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": true,
+          "ground_truth_reasoning": "No firewall, no MFA, SMB/RDP exposed \u2014 easy lateral movement target",
+          "correct": false
+        },
+        {
+          "host": "10.0.2.10",
+          "hostname": "prod-db-01",
+          "compromise_rate": 0.0,
+          "ci_95": [
+            0,
+            0.0006
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": true,
+          "ground_truth_reasoning": "CVE-2024-10978 (PostgreSQL) unpatched despite EDR+MFA layered defense",
+          "correct": false
+        },
+        {
+          "host": "10.0.2.20",
+          "hostname": "dc-01",
+          "compromise_rate": 0.0,
+          "ci_95": [
+            0,
+            0.0006
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": false,
+          "ground_truth_reasoning": "Fully hardened: no CVEs, patched, MFA, EDR, Wazuh \u2014 the control case",
+          "correct": true
+        }
+      ],
+      "analysis": "Best F1=0.40 at threshold=0.1. Accuracy=50%, Precision=100%, Recall=25%."
+    },
+    "3_single_vs_swarm": {
+      "experiment": "Single-Run vs Swarm",
+      "hypothesis": "Swarm statistical output changes (improves) host prioritization vs single run",
+      "single_run": {
+        "agents": 4,
+        "duration_seconds": 28.1,
+        "hosts_compromised": [
+          "10.0.1.10"
+        ],
+        "total_actions": 12
+      },
+      "swarm_run": {
+        "total_agents": 7575,
+        "duration_seconds": 731.838
+      },
+      "host_comparison": [
+        {
+          "host": "10.0.0.10",
+          "hostname": "web-server-01",
+          "single_run_compromised": false,
+          "single_run_priority": 2,
+          "swarm_compromise_rate": 0.0076,
+          "swarm_ci_95": [
+            0.0057,
+            0.0101
+          ],
+          "swarm_priority": 2,
+          "priority_change": 0,
+          "ground_truth": true
+        },
+        {
+          "host": "10.0.0.20",
+          "hostname": "mail-server-01",
+          "single_run_compromised": false,
+          "single_run_priority": 3,
+          "swarm_compromise_rate": 0.0003,
+          "swarm_ci_95": [
+            0.0001,
+            0.0012
+          ],
+          "swarm_priority": 3,
+          "priority_change": 0,
+          "ground_truth": false
+        },
+        {
+          "host": "10.0.1.10",
+          "hostname": "workstation-01",
+          "single_run_compromised": true,
+          "single_run_priority": 1,
+          "swarm_compromise_rate": 0.25,
+          "swarm_ci_95": [
+            0.2393,
+            0.2611
+          ],
+          "swarm_priority": 1,
+          "priority_change": 0,
+          "ground_truth": true
+        },
+        {
+          "host": "10.0.1.20",
+          "hostname": "file-server-01",
+          "single_run_compromised": false,
+          "single_run_priority": 4,
+          "swarm_compromise_rate": 0.0,
+          "swarm_ci_95": [
+            0,
+            0.0006
+          ],
+          "swarm_priority": 4,
+          "priority_change": 0,
+          "ground_truth": true
+        },
+        {
+          "host": "10.0.2.10",
+          "hostname": "prod-db-01",
+          "single_run_compromised": false,
+          "single_run_priority": 5,
+          "swarm_compromise_rate": 0.0,
+          "swarm_ci_95": [
+            0,
+            0.0006
+          ],
+          "swarm_priority": 5,
+          "priority_change": 0,
+          "ground_truth": true
+        },
+        {
+          "host": "10.0.2.20",
+          "hostname": "dc-01",
+          "single_run_compromised": false,
+          "single_run_priority": 6,
+          "swarm_compromise_rate": 0.0,
+          "swarm_ci_95": [
+            0,
+            0.0006
+          ],
+          "swarm_priority": 6,
+          "priority_change": 0,
+          "ground_truth": false
+        }
+      ],
+      "ranking_changed": false,
+      "mean_rank_delta": 0,
+      "single_run_ground_truth_matches": 3,
+      "swarm_ground_truth_matches": 2,
+      "total_hosts": 6,
+      "analysis": "Single-run matched ground truth on 3/6 hosts. Swarm matched on 2/6 hosts. Mean rank delta: 0 positions. Single run surprisingly competitive at this scale."
+    },
+    "4_defender_impact": {
+      "experiment": "Defender Impact",
+      "hypothesis": "LLM-powered defenders meaningfully reduce compromise rates",
+      "overall_compromise_with_defenders": 0.043,
+      "overall_compromise_without_defenders": 0.0636,
+      "overall_reduction_pct": 32.5,
+      "host_comparison": [
+        {
+          "host": "10.0.0.10",
+          "hostname": "web-server-01",
+          "criticality": "high",
+          "rate_with_defenders": 0.0076,
+          "rate_without_defenders": 0.0916,
+          "absolute_reduction": 0.084,
+          "relative_reduction_pct": 91.7
+        },
+        {
+          "host": "10.0.0.20",
+          "hostname": "mail-server-01",
+          "criticality": "high",
+          "rate_with_defenders": 0.0003,
+          "rate_without_defenders": 0.0403,
+          "absolute_reduction": 0.04,
+          "relative_reduction_pct": 99.3
+        },
+        {
+          "host": "10.0.1.10",
+          "hostname": "workstation-01",
+          "criticality": "medium",
+          "rate_with_defenders": 0.25,
+          "rate_without_defenders": 0.25,
+          "absolute_reduction": 0.0,
+          "relative_reduction_pct": 0.0
+        },
+        {
+          "host": "10.0.1.20",
+          "hostname": "file-server-01",
+          "criticality": "high",
+          "rate_with_defenders": 0.0,
+          "rate_without_defenders": 0.0,
+          "absolute_reduction": 0.0,
+          "relative_reduction_pct": 0.0
+        },
+        {
+          "host": "10.0.2.10",
+          "hostname": "prod-db-01",
+          "criticality": "critical",
+          "rate_with_defenders": 0.0,
+          "rate_without_defenders": 0.0,
+          "absolute_reduction": 0.0,
+          "relative_reduction_pct": 0.0
+        },
+        {
+          "host": "10.0.2.20",
+          "hostname": "dc-01",
+          "criticality": "critical",
+          "rate_with_defenders": 0.0,
+          "rate_without_defenders": 0.0,
+          "absolute_reduction": 0.0,
+          "relative_reduction_pct": 0.0
+        }
+      ],
+      "archetype_impact": {
+        "opportunist": {
+          "success_rate_with_defenders": 0.1081,
+          "success_rate_without_defenders": 0.98,
+          "hosts_compromised_with": 0,
+          "hosts_compromised_without": 0.0066
+        },
+        "apt": {
+          "success_rate_with_defenders": 0.1358,
+          "success_rate_without_defenders": 1.0,
+          "hosts_compromised_with": 0,
+          "hosts_compromised_without": 0
+        },
+        "ransomware": {
+          "success_rate_with_defenders": 0.0382,
+          "success_rate_without_defenders": 0.5045,
+          "hosts_compromised_with": 0.0317,
+          "hosts_compromised_without": 0.5208
+        },
+        "insider": {
+          "success_rate_with_defenders": 0.5598,
+          "success_rate_without_defenders": 0.695,
+          "hosts_compromised_with": 1,
+          "hosts_compromised_without": 1
+        }
+      },
+      "defense_effectiveness": {
+        "firewall": {
+          "block_rate": 0.9484,
+          "times_tested": 30300,
+          "times_blocked": 28737,
+          "confidence_interval_95": [
+            0.9459,
+            0.9509
+          ]
+        },
+        "mfa": {
+          "block_rate": 0.9999,
+          "times_tested": 18180,
+          "times_blocked": 18178,
+          "confidence_interval_95": [
+            0.9996,
+            1.0
+          ]
+        },
+        "patching": {
+          "block_rate": 0.9999,
+          "times_tested": 18180,
+          "times_blocked": 18178,
+          "confidence_interval_95": [
+            0.9996,
+            1.0
+          ]
+        },
+        "edr": {
+          "block_rate": 1.0,
+          "times_tested": 12120,
+          "times_blocked": 12120,
+          "confidence_interval_95": [
+            0.9997,
+            1
+          ]
+        }
+      },
+      "no_defender_run_duration": 206.2,
+      "analysis": "Defenders reduced overall compromise rate from 6.4% to 4.3% (32.5% reduction). Defenders have measurable impact on attacker success."
+    }
+  },
+  "completed_at": "2026-03-23T04:08:43.317347"
+}
