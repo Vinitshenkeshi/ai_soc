@@ -1,0 +1,591 @@
+{
+  "experiment": "Prediction Accuracy",
+  "hypothesis": "Swarm compromise rates predict which hosts are truly vulnerable",
+  "ground_truth": {
+    "10.0.0.10": {
+      "vulnerable": true,
+      "reasoning": "CVE-2024-7347 in nginx, externally exposed in DMZ, no EDR, no MFA, unpatched"
+    },
+    "10.0.0.20": {
+      "vulnerable": false,
+      "reasoning": "No known CVEs, MFA enabled, Wazuh monitored \u2014 no direct exploit path"
+    },
+    "10.0.1.10": {
+      "vulnerable": true,
+      "reasoning": "CVE-2024-38077 (Windows RDP), no monitoring, no EDR, unpatched"
+    },
+    "10.0.1.20": {
+      "vulnerable": true,
+      "reasoning": "No firewall, no MFA, SMB/RDP exposed \u2014 easy lateral movement target"
+    },
+    "10.0.2.10": {
+      "vulnerable": true,
+      "reasoning": "CVE-2024-10978 (PostgreSQL) unpatched despite EDR+MFA layered defense"
+    },
+    "10.0.2.20": {
+      "vulnerable": false,
+      "reasoning": "Fully hardened: no CVEs, patched, MFA, EDR, Wazuh \u2014 the control case"
+    }
+  },
+  "best_threshold": 0.1,
+  "best_results": {
+    "accuracy": 0.5,
+    "precision": 1.0,
+    "recall": 0.25,
+    "f1_score": 0.4,
+    "confusion_matrix": {
+      "tp": 1,
+      "fp": 0,
+      "tn": 2,
+      "fn": 3
+    }
+  },
+  "all_thresholds": [
+    {
+      "threshold": 0.1,
+      "accuracy": 0.5,
+      "precision": 1.0,
+      "recall": 0.25,
+      "f1_score": 0.4,
+      "confusion_matrix": {
+        "tp": 1,
+        "fp": 0,
+        "tn": 2,
+        "fn": 3
+      },
+      "predictions": [
+        {
+          "host": "10.0.0.10",
+          "hostname": "web-server-01",
+          "compromise_rate": 0.0076,
+          "ci_95": [
+            0.0057,
+            0.0101
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": true,
+          "ground_truth_reasoning": "CVE-2024-7347 in nginx, externally exposed in DMZ, no EDR, no MFA, unpatched",
+          "correct": false
+        },
+        {
+          "host": "10.0.0.20",
+          "hostname": "mail-server-01",
+          "compromise_rate": 0.0003,
+          "ci_95": [
+            0.0001,
+            0.0012
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": false,
+          "ground_truth_reasoning": "No known CVEs, MFA enabled, Wazuh monitored \u2014 no direct exploit path",
+          "correct": true
+        },
+        {
+          "host": "10.0.1.10",
+          "hostname": "workstation-01",
+          "compromise_rate": 0.25,
+          "ci_95": [
+            0.2393,
+            0.2611
+          ],
+          "predicted_vulnerable": true,
+          "ground_truth_vulnerable": true,
+          "ground_truth_reasoning": "CVE-2024-38077 (Windows RDP), no monitoring, no EDR, unpatched",
+          "correct": true
+        },
+        {
+          "host": "10.0.1.20",
+          "hostname": "file-server-01",
+          "compromise_rate": 0.0,
+          "ci_95": [
+            0,
+            0.0006
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": true,
+          "ground_truth_reasoning": "No firewall, no MFA, SMB/RDP exposed \u2014 easy lateral movement target",
+          "correct": false
+        },
+        {
+          "host": "10.0.2.10",
+          "hostname": "prod-db-01",
+          "compromise_rate": 0.0,
+          "ci_95": [
+            0,
+            0.0006
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": true,
+          "ground_truth_reasoning": "CVE-2024-10978 (PostgreSQL) unpatched despite EDR+MFA layered defense",
+          "correct": false
+        },
+        {
+          "host": "10.0.2.20",
+          "hostname": "dc-01",
+          "compromise_rate": 0.0,
+          "ci_95": [
+            0,
+            0.0006
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": false,
+          "ground_truth_reasoning": "Fully hardened: no CVEs, patched, MFA, EDR, Wazuh \u2014 the control case",
+          "correct": true
+        }
+      ]
+    },
+    {
+      "threshold": 0.2,
+      "accuracy": 0.5,
+      "precision": 1.0,
+      "recall": 0.25,
+      "f1_score": 0.4,
+      "confusion_matrix": {
+        "tp": 1,
+        "fp": 0,
+        "tn": 2,
+        "fn": 3
+      },
+      "predictions": [
+        {
+          "host": "10.0.0.10",
+          "hostname": "web-server-01",
+          "compromise_rate": 0.0076,
+          "ci_95": [
+            0.0057,
+            0.0101
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": true,
+          "ground_truth_reasoning": "CVE-2024-7347 in nginx, externally exposed in DMZ, no EDR, no MFA, unpatched",
+          "correct": false
+        },
+        {
+          "host": "10.0.0.20",
+          "hostname": "mail-server-01",
+          "compromise_rate": 0.0003,
+          "ci_95": [
+            0.0001,
+            0.0012
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": false,
+          "ground_truth_reasoning": "No known CVEs, MFA enabled, Wazuh monitored \u2014 no direct exploit path",
+          "correct": true
+        },
+        {
+          "host": "10.0.1.10",
+          "hostname": "workstation-01",
+          "compromise_rate": 0.25,
+          "ci_95": [
+            0.2393,
+            0.2611
+          ],
+          "predicted_vulnerable": true,
+          "ground_truth_vulnerable": true,
+          "ground_truth_reasoning": "CVE-2024-38077 (Windows RDP), no monitoring, no EDR, unpatched",
+          "correct": true
+        },
+        {
+          "host": "10.0.1.20",
+          "hostname": "file-server-01",
+          "compromise_rate": 0.0,
+          "ci_95": [
+            0,
+            0.0006
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": true,
+          "ground_truth_reasoning": "No firewall, no MFA, SMB/RDP exposed \u2014 easy lateral movement target",
+          "correct": false
+        },
+        {
+          "host": "10.0.2.10",
+          "hostname": "prod-db-01",
+          "compromise_rate": 0.0,
+          "ci_95": [
+            0,
+            0.0006
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": true,
+          "ground_truth_reasoning": "CVE-2024-10978 (PostgreSQL) unpatched despite EDR+MFA layered defense",
+          "correct": false
+        },
+        {
+          "host": "10.0.2.20",
+          "hostname": "dc-01",
+          "compromise_rate": 0.0,
+          "ci_95": [
+            0,
+            0.0006
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": false,
+          "ground_truth_reasoning": "Fully hardened: no CVEs, patched, MFA, EDR, Wazuh \u2014 the control case",
+          "correct": true
+        }
+      ]
+    },
+    {
+      "threshold": 0.3,
+      "accuracy": 0.3333,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "confusion_matrix": {
+        "tp": 0,
+        "fp": 0,
+        "tn": 2,
+        "fn": 4
+      },
+      "predictions": [
+        {
+          "host": "10.0.0.10",
+          "hostname": "web-server-01",
+          "compromise_rate": 0.0076,
+          "ci_95": [
+            0.0057,
+            0.0101
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": true,
+          "ground_truth_reasoning": "CVE-2024-7347 in nginx, externally exposed in DMZ, no EDR, no MFA, unpatched",
+          "correct": false
+        },
+        {
+          "host": "10.0.0.20",
+          "hostname": "mail-server-01",
+          "compromise_rate": 0.0003,
+          "ci_95": [
+            0.0001,
+            0.0012
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": false,
+          "ground_truth_reasoning": "No known CVEs, MFA enabled, Wazuh monitored \u2014 no direct exploit path",
+          "correct": true
+        },
+        {
+          "host": "10.0.1.10",
+          "hostname": "workstation-01",
+          "compromise_rate": 0.25,
+          "ci_95": [
+            0.2393,
+            0.2611
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": true,
+          "ground_truth_reasoning": "CVE-2024-38077 (Windows RDP), no monitoring, no EDR, unpatched",
+          "correct": false
+        },
+        {
+          "host": "10.0.1.20",
+          "hostname": "file-server-01",
+          "compromise_rate": 0.0,
+          "ci_95": [
+            0,
+            0.0006
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": true,
+          "ground_truth_reasoning": "No firewall, no MFA, SMB/RDP exposed \u2014 easy lateral movement target",
+          "correct": false
+        },
+        {
+          "host": "10.0.2.10",
+          "hostname": "prod-db-01",
+          "compromise_rate": 0.0,
+          "ci_95": [
+            0,
+            0.0006
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": true,
+          "ground_truth_reasoning": "CVE-2024-10978 (PostgreSQL) unpatched despite EDR+MFA layered defense",
+          "correct": false
+        },
+        {
+          "host": "10.0.2.20",
+          "hostname": "dc-01",
+          "compromise_rate": 0.0,
+          "ci_95": [
+            0,
+            0.0006
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": false,
+          "ground_truth_reasoning": "Fully hardened: no CVEs, patched, MFA, EDR, Wazuh \u2014 the control case",
+          "correct": true
+        }
+      ]
+    },
+    {
+      "threshold": 0.4,
+      "accuracy": 0.3333,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "confusion_matrix": {
+        "tp": 0,
+        "fp": 0,
+        "tn": 2,
+        "fn": 4
+      },
+      "predictions": [
+        {
+          "host": "10.0.0.10",
+          "hostname": "web-server-01",
+          "compromise_rate": 0.0076,
+          "ci_95": [
+            0.0057,
+            0.0101
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": true,
+          "ground_truth_reasoning": "CVE-2024-7347 in nginx, externally exposed in DMZ, no EDR, no MFA, unpatched",
+          "correct": false
+        },
+        {
+          "host": "10.0.0.20",
+          "hostname": "mail-server-01",
+          "compromise_rate": 0.0003,
+          "ci_95": [
+            0.0001,
+            0.0012
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": false,
+          "ground_truth_reasoning": "No known CVEs, MFA enabled, Wazuh monitored \u2014 no direct exploit path",
+          "correct": true
+        },
+        {
+          "host": "10.0.1.10",
+          "hostname": "workstation-01",
+          "compromise_rate": 0.25,
+          "ci_95": [
+            0.2393,
+            0.2611
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": true,
+          "ground_truth_reasoning": "CVE-2024-38077 (Windows RDP), no monitoring, no EDR, unpatched",
+          "correct": false
+        },
+        {
+          "host": "10.0.1.20",
+          "hostname": "file-server-01",
+          "compromise_rate": 0.0,
+          "ci_95": [
+            0,
+            0.0006
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": true,
+          "ground_truth_reasoning": "No firewall, no MFA, SMB/RDP exposed \u2014 easy lateral movement target",
+          "correct": false
+        },
+        {
+          "host": "10.0.2.10",
+          "hostname": "prod-db-01",
+          "compromise_rate": 0.0,
+          "ci_95": [
+            0,
+            0.0006
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": true,
+          "ground_truth_reasoning": "CVE-2024-10978 (PostgreSQL) unpatched despite EDR+MFA layered defense",
+          "correct": false
+        },
+        {
+          "host": "10.0.2.20",
+          "hostname": "dc-01",
+          "compromise_rate": 0.0,
+          "ci_95": [
+            0,
+            0.0006
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": false,
+          "ground_truth_reasoning": "Fully hardened: no CVEs, patched, MFA, EDR, Wazuh \u2014 the control case",
+          "correct": true
+        }
+      ]
+    },
+    {
+      "threshold": 0.5,
+      "accuracy": 0.3333,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "confusion_matrix": {
+        "tp": 0,
+        "fp": 0,
+        "tn": 2,
+        "fn": 4
+      },
+      "predictions": [
+        {
+          "host": "10.0.0.10",
+          "hostname": "web-server-01",
+          "compromise_rate": 0.0076,
+          "ci_95": [
+            0.0057,
+            0.0101
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": true,
+          "ground_truth_reasoning": "CVE-2024-7347 in nginx, externally exposed in DMZ, no EDR, no MFA, unpatched",
+          "correct": false
+        },
+        {
+          "host": "10.0.0.20",
+          "hostname": "mail-server-01",
+          "compromise_rate": 0.0003,
+          "ci_95": [
+            0.0001,
+            0.0012
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": false,
+          "ground_truth_reasoning": "No known CVEs, MFA enabled, Wazuh monitored \u2014 no direct exploit path",
+          "correct": true
+        },
+        {
+          "host": "10.0.1.10",
+          "hostname": "workstation-01",
+          "compromise_rate": 0.25,
+          "ci_95": [
+            0.2393,
+            0.2611
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": true,
+          "ground_truth_reasoning": "CVE-2024-38077 (Windows RDP), no monitoring, no EDR, unpatched",
+          "correct": false
+        },
+        {
+          "host": "10.0.1.20",
+          "hostname": "file-server-01",
+          "compromise_rate": 0.0,
+          "ci_95": [
+            0,
+            0.0006
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": true,
+          "ground_truth_reasoning": "No firewall, no MFA, SMB/RDP exposed \u2014 easy lateral movement target",
+          "correct": false
+        },
+        {
+          "host": "10.0.2.10",
+          "hostname": "prod-db-01",
+          "compromise_rate": 0.0,
+          "ci_95": [
+            0,
+            0.0006
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": true,
+          "ground_truth_reasoning": "CVE-2024-10978 (PostgreSQL) unpatched despite EDR+MFA layered defense",
+          "correct": false
+        },
+        {
+          "host": "10.0.2.20",
+          "hostname": "dc-01",
+          "compromise_rate": 0.0,
+          "ci_95": [
+            0,
+            0.0006
+          ],
+          "predicted_vulnerable": false,
+          "ground_truth_vulnerable": false,
+          "ground_truth_reasoning": "Fully hardened: no CVEs, patched, MFA, EDR, Wazuh \u2014 the control case",
+          "correct": true
+        }
+      ]
+    }
+  ],
+  "per_host_predictions": [
+    {
+      "host": "10.0.0.10",
+      "hostname": "web-server-01",
+      "compromise_rate": 0.0076,
+      "ci_95": [
+        0.0057,
+        0.0101
+      ],
+      "predicted_vulnerable": false,
+      "ground_truth_vulnerable": true,
+      "ground_truth_reasoning": "CVE-2024-7347 in nginx, externally exposed in DMZ, no EDR, no MFA, unpatched",
+      "correct": false
+    },
+    {
+      "host": "10.0.0.20",
+      "hostname": "mail-server-01",
+      "compromise_rate": 0.0003,
+      "ci_95": [
+        0.0001,
+        0.0012
+      ],
+      "predicted_vulnerable": false,
+      "ground_truth_vulnerable": false,
+      "ground_truth_reasoning": "No known CVEs, MFA enabled, Wazuh monitored \u2014 no direct exploit path",
+      "correct": true
+    },
+    {
+      "host": "10.0.1.10",
+      "hostname": "workstation-01",
+      "compromise_rate": 0.25,
+      "ci_95": [
+        0.2393,
+        0.2611
+      ],
+      "predicted_vulnerable": true,
+      "ground_truth_vulnerable": true,
+      "ground_truth_reasoning": "CVE-2024-38077 (Windows RDP), no monitoring, no EDR, unpatched",
+      "correct": true
+    },
+    {
+      "host": "10.0.1.20",
+      "hostname": "file-server-01",
+      "compromise_rate": 0.0,
+      "ci_95": [
+        0,
+        0.0006
+      ],
+      "predicted_vulnerable": false,
+      "ground_truth_vulnerable": true,
+      "ground_truth_reasoning": "No firewall, no MFA, SMB/RDP exposed \u2014 easy lateral movement target",
+      "correct": false
+    },
+    {
+      "host": "10.0.2.10",
+      "hostname": "prod-db-01",
+      "compromise_rate": 0.0,
+      "ci_95": [
+        0,
+        0.0006
+      ],
+      "predicted_vulnerable": false,
+      "ground_truth_vulnerable": true,
+      "ground_truth_reasoning": "CVE-2024-10978 (PostgreSQL) unpatched despite EDR+MFA layered defense",
+      "correct": false
+    },
+    {
+      "host": "10.0.2.20",
+      "hostname": "dc-01",
+      "compromise_rate": 0.0,
+      "ci_95": [
+        0,
+        0.0006
+      ],
+      "predicted_vulnerable": false,
+      "ground_truth_vulnerable": false,
+      "ground_truth_reasoning": "Fully hardened: no CVEs, patched, MFA, EDR, Wazuh \u2014 the control case",
+      "correct": true
+    }
+  ],
+  "analysis": "Best F1=0.40 at threshold=0.1. Accuracy=50%, Precision=100%, Recall=25%."
+}
