@@ -1,0 +1,5013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI-SOC Command Center</title>
+<style>
+/* ============================================================
+   RESET + CSS VARIABLES
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-primary:    #0a0e17;
+  --bg-surface:    #131a2a;
+  --bg-card:       #1a2332;
+  --bg-card-hover: #1f2b3d;
+  --border:        #2a3a4a;
+  --border-bright: #3d5068;
+  --text-primary:  #e6edf3;
+  --text-secondary:#8b949e;
+  --text-muted:    #6e7681;
+  --accent:        #58a6ff;
+  --critical:      #f85149;
+  --high:          #d29922;
+  --medium:        #58a6ff;
+  --low:           #3fb950;
+  --info:          #8b949e;
+  --success:       #3fb950;
+  --contained:     #238636;
+  --font-mono:     'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  --font-sans:     system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --radius:        8px;
+  --radius-sm:     4px;
+  --radius-lg:     12px;
+  --transition:    0.2s ease;
+}
+
+html { font-size: 14px; scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code, .mono { font-family: var(--font-mono); }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-surface); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-bright); }
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(63, 185, 80, 0.4); }
+  50%       { box-shadow: 0 0 0 6px rgba(63, 185, 80, 0); }
+}
+@keyframes pulse-critical {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(248, 81, 73, 0.5); }
+  50%       { box-shadow: 0 0 0 8px rgba(248, 81, 73, 0); }
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes slideRight {
+  to { transform: translateX(120%); opacity: 0; }
+}
+@keyframes fadeDim {
+  to { opacity: 0.3; }
+}
+@keyframes expandDown {
+  from { max-height: 0; opacity: 0; }
+  to   { max-height: 2000px; opacity: 1; }
+}
+@keyframes flash-green {
+  0%   { background: var(--bg-card); }
+  30%  { background: rgba(63, 185, 80, 0.2); }
+  100% { background: var(--bg-card); }
+}
+@keyframes flash-red {
+  0%   { background: var(--bg-card); }
+  30%  { background: rgba(248, 81, 73, 0.15); }
+  100% { background: var(--bg-card); }
+}
+
+/* ============================================================
+   MISSION STATUS BAR — sticky header
+   ============================================================ */
+#mission-bar {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  backdrop-filter: blur(8px);
+  background: rgba(19, 26, 42, 0.95);
+}
+
+.mb-brand {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--critical);
+  letter-spacing: 3px;
+  flex-shrink: 0;
+  padding-right: 20px;
+  border-right: 1px solid var(--border);
+}
+
+.mb-section {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 16px;
+  border-right: 1px solid var(--border);
+  height: 100%;
+  flex-shrink: 0;
+}
+.mb-section:last-child { border-right: none; margin-left: auto; }
+
+.mb-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.mb-value {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  flex-shrink: 0;
+}
+.status-dot.online { animation: pulse-dot 2s infinite; }
+.status-dot.offline { background: var(--critical); }
+.status-dot.partial { background: var(--high); }
+
+.sev-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.sev-badge.critical { background: rgba(248,81,73,0.15); color: var(--critical); border: 1px solid rgba(248,81,73,0.3); }
+.sev-badge.high     { background: rgba(210,153,34,0.15); color: var(--high);     border: 1px solid rgba(210,153,34,0.3); }
+.sev-badge.medium   { background: rgba(88,166,255,0.15); color: var(--medium);   border: 1px solid rgba(88,166,255,0.3); }
+.sev-badge.low      { background: rgba(63,185,80,0.15);  color: var(--low);      border: 1px solid rgba(63,185,80,0.3); }
+.sev-badge.info     { background: rgba(139,148,158,0.15);color: var(--info);     border: 1px solid rgba(139,148,158,0.3); }
+
+.grade-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px; height: 26px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+}
+.grade-A { background: rgba(63,185,80,0.2); color: var(--low); }
+.grade-B { background: rgba(88,166,255,0.2); color: var(--accent); }
+.grade-C { background: rgba(210,153,34,0.2); color: var(--high); }
+.grade-D { background: rgba(248,81,73,0.2); color: var(--critical); }
+.grade-F { background: rgba(248,81,73,0.3); color: var(--critical); }
+
+.score-bar-wrap {
+  width: 60px; height: 5px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.score-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--accent);
+  transition: width 0.5s ease;
+}
+
+.mb-refresh {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* ============================================================
+   MAIN LAYOUT
+   ============================================================ */
+.main-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.section-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title::before {
+  content: '';
+  display: block;
+  width: 3px;
+  height: 14px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+/* ============================================================
+   LOADING SKELETON
+   ============================================================ */
+.skeleton {
+  background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-card-hover) 50%, var(--bg-card) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: var(--radius-sm);
+}
+.skeleton-line { height: 12px; margin-bottom: 8px; }
+.skeleton-line.w-60 { width: 60%; }
+.skeleton-line.w-80 { width: 80%; }
+.skeleton-line.w-40 { width: 40%; }
+
+/* ============================================================
+   PRIORITY QUEUE
+   ============================================================ */
+#priority-queue { animation: fadeSlideUp 0.4s ease; }
+
+.incident-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  border-left-width: 4px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  transition: background var(--transition), box-shadow var(--transition);
+  animation: fadeSlideUp 0.3s ease;
+}
+.incident-card:hover {
+  background: var(--bg-card-hover);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+.incident-card.sev-critical { border-left-color: var(--critical); }
+.incident-card.sev-high     { border-left-color: var(--high); }
+.incident-card.sev-medium   { border-left-color: var(--medium); }
+.incident-card.sev-low      { border-left-color: var(--low); }
+.incident-card.sev-info     { border-left-color: var(--info); }
+
+.incident-card.action-contain { animation: slideRight 0.5s ease forwards; }
+.incident-card.action-fp      { animation: fadeDim 0.5s ease forwards; }
+.incident-card.flash-contain  { animation: flash-green 0.6s ease; }
+.incident-card.flash-fp       { animation: flash-red 0.6s ease; }
+
+.ic-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px 10px;
+}
+.ic-meta {
+  flex: 1;
+  min-width: 0;
+}
+.ic-id-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.ic-id {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.ic-alert-count {
+  font-size: 11px;
+  color: var(--text-secondary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  padding: 0 6px;
+  border-radius: 10px;
+}
+.ic-time {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+.ic-summary {
+  font-size: 13px;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+/* Kill Chain */
+.kill-chain {
+  margin: 0 16px 12px;
+}
+.kc-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+  font-family: var(--font-mono);
+}
+.kc-track {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+.kc-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  position: relative;
+}
+.kc-stage:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  left: calc(50% + 6px);
+  right: calc(-50% + 6px);
+  height: 2px;
+  background: var(--border);
+  z-index: 0;
+}
+.kc-stage.reached:not(:last-child)::after {
+  background: var(--medium);
+}
+.kc-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: transparent;
+  position: relative;
+  z-index: 1;
+  transition: all 0.2s;
+}
+.kc-stage.reached .kc-dot {
+  background: var(--medium);
+  border-color: var(--medium);
+}
+.kc-stage.current .kc-dot {
+  width: 16px; height: 16px;
+  border-color: var(--critical);
+  background: var(--critical);
+  animation: pulse-critical 1.5s infinite;
+}
+.kc-stage.current.sev-high .kc-dot  { border-color: var(--high); background: var(--high); animation: none; }
+.kc-stage.current.sev-medium .kc-dot { border-color: var(--medium); background: var(--medium); animation: none; }
+.kc-name {
+  font-size: 9px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+.kc-stage.reached .kc-name,
+.kc-stage.current .kc-name { color: var(--text-secondary); }
+
+/* IP flow */
+.ic-flow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.ic-flow-arrow {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+.ip-tag {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  color: var(--accent);
+}
+
+/* Incident action buttons */
+.ic-actions {
+  display: flex;
+  gap: 8px;
+  padding: 10px 16px 14px;
+  border-top: 1px solid var(--border);
+  background: rgba(0,0,0,0.15);
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all var(--transition);
+  font-family: var(--font-sans);
+  white-space: nowrap;
+  user-select: none;
+}
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn:active { transform: scale(0.97); }
+
+.btn-contain {
+  background: rgba(35, 134, 54, 0.2);
+  color: var(--success);
+  border-color: rgba(35, 134, 54, 0.4);
+}
+.btn-contain:hover { background: rgba(35, 134, 54, 0.35); border-color: var(--success); }
+
+.btn-fp {
+  background: transparent;
+  color: var(--critical);
+  border-color: rgba(248, 81, 73, 0.4);
+}
+.btn-fp:hover { background: rgba(248, 81, 73, 0.1); border-color: var(--critical); }
+
+.btn-investigate {
+  background: rgba(88, 166, 255, 0.1);
+  color: var(--accent);
+  border-color: rgba(88, 166, 255, 0.3);
+}
+.btn-investigate:hover { background: rgba(88, 166, 255, 0.2); border-color: var(--accent); }
+.btn-investigate.active {
+  background: rgba(88, 166, 255, 0.2);
+  border-color: var(--accent);
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #0a0e17;
+  border-color: var(--accent);
+}
+.btn-primary:hover { background: #79b8ff; border-color: #79b8ff; }
+
+.btn-danger {
+  background: rgba(248,81,73,0.2);
+  color: var(--critical);
+  border-color: rgba(248,81,73,0.5);
+}
+.btn-danger:hover { background: rgba(248,81,73,0.3); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: var(--border);
+}
+.btn-ghost:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+
+.btn-sm { padding: 4px 10px; font-size: 11px; }
+.btn-lg { padding: 10px 22px; font-size: 14px; }
+
+.btn-icon-check::after { content: ' \2713'; }
+
+/* ============================================================
+   INVESTIGATION WORKSPACE
+   ============================================================ */
+.investigation-workspace {
+  display: none;
+  overflow: hidden;
+  border-top: 1px solid var(--border);
+  background: var(--bg-surface);
+}
+.investigation-workspace.open {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+  animation: expandDown 0.4s ease;
+}
+
+.iw-col {
+  padding: 16px;
+  border-right: 1px solid var(--border);
+}
+.iw-col:last-child { border-right: none; }
+
+.iw-col-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--accent);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Timeline */
+.timeline-alert {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 6px;
+  background: var(--bg-card);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+.timeline-alert:hover { background: var(--bg-card-hover); }
+.ta-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.ta-time {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.ta-category {
+  font-size: 10px;
+  color: var(--text-secondary);
+  margin-left: auto;
+}
+.ta-expand {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-secondary);
+  display: none;
+}
+.ta-expand.open { display: block; }
+.ta-logline {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  padding: 6px 8px;
+  background: var(--bg-primary);
+  border-radius: var(--radius-sm);
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 80px;
+  overflow-y: auto;
+}
+
+/* Intel */
+.mitre-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  background: rgba(88,166,255,0.1);
+  border: 1px solid rgba(88,166,255,0.2);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+  margin: 2px;
+}
+.rag-result {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  margin-bottom: 8px;
+}
+.rag-technique {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+.rag-desc {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+.history-stat {
+  font-size: 12px;
+  color: var(--text-secondary);
+  padding: 6px 0;
+}
+.history-stat strong { color: var(--high); }
+
+/* Actions panel */
+.iw-form-row { margin-bottom: 10px; }
+.iw-form-row label {
+  display: block;
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.iw-select,
+.iw-textarea {
+  width: 100%;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  padding: 7px 10px;
+  outline: none;
+  transition: border-color var(--transition);
+}
+.iw-select:focus,
+.iw-textarea:focus { border-color: var(--accent); }
+.iw-textarea { min-height: 70px; resize: vertical; }
+
+.iw-btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.rule-output {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--low);
+  white-space: pre-wrap;
+  max-height: 180px;
+  overflow-y: auto;
+  margin-top: 8px;
+  display: none;
+}
+.rule-output.visible { display: block; }
+
+.iw-close-bar {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-primary);
+}
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  gap: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.empty-icon {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: rgba(63,185,80,0.1);
+  border: 2px solid rgba(63,185,80,0.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+}
+.empty-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.empty-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  max-width: 340px;
+}
+
+/* ============================================================
+   THREAT LANDSCAPE — two column
+   ============================================================ */
+.threat-landscape {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* Network Map */
+.network-map-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+.network-segment {
+  margin-bottom: 16px;
+}
+.segment-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+.host-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.host-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  border-left-width: 3px;
+  border-left-color: var(--success);
+  padding: 8px 10px;
+  transition: all var(--transition);
+}
+.host-card:hover { background: var(--bg-card-hover); }
+.host-card.risk-low     { border-left-color: var(--success); }
+.host-card.risk-medium  { border-left-color: var(--high); }
+.host-card.risk-high    { border-left-color: var(--critical); }
+.host-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+.host-ip {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+.host-risk-bar-wrap {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.host-risk-bar {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--success);
+  transition: width 0.5s ease;
+}
+
+/* Simulation + Risk panel */
+.sim-risk-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sim-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.sim-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.timestep-input {
+  width: 70px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  outline: none;
+}
+.timestep-input:focus { border-color: var(--accent); }
+.timestep-label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.btn-run-sim {
+  background: rgba(248,81,73,0.2);
+  color: var(--critical);
+  border-color: rgba(248,81,73,0.4);
+}
+.btn-run-sim:hover { background: rgba(248,81,73,0.3); }
+.btn-run-sim.running { opacity: 0.7; cursor: not-allowed; }
+
+.spinner {
+  display: inline-block;
+  width: 14px; height: 14px;
+  border: 2px solid rgba(248,81,73,0.2);
+  border-top-color: var(--critical);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+.sim-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  padding: 8px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+}
+
+.agent-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+.ac-name {
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.ac-stats {
+  display: flex;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.ac-stats span { font-family: var(--font-mono); color: var(--high); }
+
+.weakness-list, .action-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.weakness-list li {
+  font-size: 12px;
+  color: var(--critical);
+  padding: 3px 0;
+  padding-left: 14px;
+  position: relative;
+}
+.weakness-list li::before { content: '!'; position: absolute; left: 0; font-weight: 700; }
+.action-list li {
+  font-size: 12px;
+  color: var(--text-secondary);
+  padding: 3px 0;
+  padding-left: 18px;
+  position: relative;
+  counter-increment: action-counter;
+}
+.action-list { counter-reset: action-counter; }
+.action-list li::before {
+  content: counter(action-counter) '.';
+  position: absolute; left: 0;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+/* Risk panel */
+.risk-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+.risk-grade-display {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+.risk-grade-big {
+  width: 56px; height: 56px;
+  border-radius: var(--radius);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 32px;
+  font-weight: 700;
+}
+.risk-grade-meta {
+  flex: 1;
+}
+.risk-grade-label {
+  font-size: 13px;
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.risk-grade-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.risk-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.risk-table th {
+  text-align: left;
+  padding: 6px 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+.risk-table td {
+  padding: 7px 8px;
+  border-bottom: 1px solid rgba(42,58,74,0.5);
+  color: var(--text-secondary);
+  vertical-align: middle;
+}
+.risk-table tr:last-child td { border-bottom: none; }
+.risk-table td.mono { font-family: var(--font-mono); font-size: 11px; color: var(--accent); }
+.risk-table td.hostname { color: var(--text-primary); font-size: 12px; }
+.score-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.score-mini-bar {
+  flex: 1;
+  height: 5px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.score-mini-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--success);
+  transition: width 0.5s;
+}
+.score-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  min-width: 24px;
+  text-align: right;
+}
+
+/* ============================================================
+   SYSTEM FOOTER
+   ============================================================ */
+.system-footer {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.footer-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  cursor: pointer;
+  user-select: none;
+  transition: background var(--transition);
+}
+.footer-toggle:hover { background: var(--bg-card-hover); }
+.footer-toggle-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-secondary);
+}
+.footer-chevron {
+  font-size: 12px;
+  color: var(--text-muted);
+  transition: transform 0.3s;
+}
+.footer-chevron.open { transform: rotate(180deg); }
+
+.footer-body {
+  display: none;
+  padding: 16px;
+  border-top: 1px solid var(--border);
+}
+.footer-body.open { display: block; }
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.service-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.service-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.service-info { flex: 1; min-width: 0; }
+.service-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.service-sub {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.service-docs {
+  font-size: 10px;
+  color: var(--accent);
+  text-decoration: none;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.service-docs:hover { text-decoration: underline; }
+
+.footer-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.quick-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all var(--transition);
+}
+.quick-link:hover {
+  background: var(--bg-card-hover);
+  color: var(--accent);
+  border-color: var(--accent);
+  text-decoration: none;
+}
+.ql-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.rag-collections {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.collection-tag {
+  background: rgba(88,166,255,0.08);
+  border: 1px solid rgba(88,166,255,0.2);
+  border-radius: var(--radius-sm);
+  padding: 3px 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+}
+
+/* ============================================================
+   TOAST NOTIFICATIONS
+   ============================================================ */
+#toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+.toast {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--text-primary);
+  min-width: 220px;
+  max-width: 340px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+  animation: fadeSlideUp 0.3s ease;
+  pointer-events: auto;
+}
+.toast.success { border-left: 3px solid var(--success); }
+.toast.error   { border-left: 3px solid var(--critical); }
+.toast.info    { border-left: 3px solid var(--accent); }
+.toast.warning { border-left: 3px solid var(--high); }
+
+/* ============================================================
+   LOADING OVERLAY
+   ============================================================ */
+.loading-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+/* ============================================================
+   UTILITY
+   ============================================================ */
+.hidden { display: none !important; }
+.text-critical { color: var(--critical); }
+.text-high     { color: var(--high); }
+.text-medium   { color: var(--medium); }
+.text-low      { color: var(--low); }
+.text-muted    { color: var(--text-muted); }
+.text-secondary{ color: var(--text-secondary); }
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 12px 0;
+}
+.subsection-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin: 10px 0 6px;
+}
+
+/* Chat Panel */
+.chat-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 420px;
+  height: 100vh;
+  background: var(--bg-surface);
+  border-left: 1px solid var(--border);
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  box-shadow: -4px 0 24px rgba(0,0,0,0.5);
+}
+.chat-overlay.open { transform: translateX(0); }
+
+.chat-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-card);
+  flex-shrink: 0;
+}
+.chat-agent-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.chat-agent-name {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text-primary);
+  flex: 1;
+}
+.chat-agent-type {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.chat-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition);
+}
+.chat-close:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chat-bubble {
+  max-width: 85%;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+.chat-bubble.user {
+  align-self: flex-end;
+  background: var(--bg-card);
+  border: 1px solid var(--accent);
+  border-bottom-right-radius: 4px;
+}
+.chat-bubble.attacker {
+  align-self: flex-start;
+  background: var(--bg-card);
+  border-left: 3px solid var(--text-muted);
+  border-bottom-left-radius: 4px;
+}
+
+.chat-typing {
+  align-self: flex-start;
+  display: flex;
+  gap: 4px;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border-left: 3px solid var(--text-muted);
+}
+.chat-typing-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  animation: chatTypingPulse 1.4s infinite;
+}
+.chat-typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.chat-typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes chatTypingPulse {
+  0%, 60%, 100% { opacity: 0.3; transform: scale(0.8); }
+  30% { opacity: 1; transform: scale(1); }
+}
+
+.chat-suggestions {
+  padding: 8px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-card);
+  flex-shrink: 0;
+}
+.chat-chip {
+  padding: 5px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.chat-chip:hover { border-color: var(--accent); color: var(--accent); }
+
+.chat-input-row {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+  background: var(--bg-card);
+  flex-shrink: 0;
+}
+.chat-input {
+  flex: 1;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  font-size: 13px;
+  font-family: var(--font-sans);
+  outline: none;
+}
+.chat-input:focus { border-color: var(--accent); }
+.chat-send {
+  padding: 8px 16px;
+  background: var(--accent);
+  color: #0a0e17;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.chat-send:hover { background: #79b8ff; }
+.chat-send:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* War-Game Replay */
+.wg-section {
+  margin-top: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.wg-section-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.wg-viewport {
+  position: relative;
+  min-height: 500px;
+  background: var(--bg-primary);
+  background-image:
+    radial-gradient(circle at 50% 50%, rgba(88,166,255,0.03) 0%, transparent 70%),
+    linear-gradient(rgba(42,58,74,0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(42,58,74,0.08) 1px, transparent 1px);
+  background-size: 100% 100%, 40px 40px, 40px 40px;
+  overflow: hidden;
+}
+.wg-canvas {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+}
+.wg-nodes-layer {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+}
+.wg-node {
+  position: absolute;
+  pointer-events: all;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  transition: all 0.3s;
+}
+.wg-node-ring {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  border: 3px solid var(--accent);
+  background: rgba(19,26,42,0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 18px;
+  backdrop-filter: blur(4px);
+}
+.wg-node-ring.critical { width: 64px; height: 64px; border-width: 4px; }
+.wg-node-ring.high { width: 52px; height: 52px; }
+.wg-node-ring.medium { width: 44px; height: 44px; }
+.wg-node-ring.low { width: 38px; height: 38px; }
+
+.wg-node-ring.state-clean { border-color: var(--accent); box-shadow: 0 0 12px rgba(88,166,255,0.15), inset 0 0 8px rgba(88,166,255,0.05); }
+.wg-node-ring.state-scanned { border-color: var(--high); box-shadow: 0 0 16px rgba(210,153,34,0.4), 0 0 30px rgba(210,153,34,0.15), inset 0 0 10px rgba(210,153,34,0.1); }
+.wg-node-ring.state-compromised { border-color: var(--critical); box-shadow: 0 0 20px rgba(248,81,73,0.5), 0 0 40px rgba(248,81,73,0.2), inset 0 0 12px rgba(248,81,73,0.15); animation: wgNodeCompromised 2s ease-in-out infinite; }
+.wg-node-ring.state-admin { border-color: #ff3333; box-shadow: 0 0 24px rgba(255,51,51,0.6), 0 0 50px rgba(255,51,51,0.3), inset 0 0 15px rgba(255,51,51,0.2); animation: wgNodeAdmin 1.2s ease-in-out infinite; }
+
+@keyframes wgNodeCompromised {
+  0%, 100% { box-shadow: 0 0 20px rgba(248,81,73,0.5), 0 0 40px rgba(248,81,73,0.2); }
+  50% { box-shadow: 0 0 28px rgba(248,81,73,0.7), 0 0 56px rgba(248,81,73,0.3); }
+}
+@keyframes wgNodeAdmin {
+  0%, 100% { box-shadow: 0 0 24px rgba(255,51,51,0.6), 0 0 50px rgba(255,51,51,0.3); transform: scale(1); }
+  50% { box-shadow: 0 0 32px rgba(255,51,51,0.8), 0 0 64px rgba(255,51,51,0.4); transform: scale(1.05); }
+}
+
+.wg-node-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  white-space: nowrap;
+}
+.wg-node-ip {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+.wg-segment-label {
+  position: absolute;
+  left: 12px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.wg-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-surface);
+}
+.wg-play-btn {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: none;
+  color: #0a0e17;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--transition);
+}
+.wg-play-btn:hover { background: #79b8ff; }
+.wg-step-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.wg-step-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+.wg-scrubber {
+  flex: 1;
+  -webkit-appearance: none;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  outline: none;
+}
+.wg-scrubber::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 2px solid var(--bg-surface);
+}
+.wg-step-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  min-width: 60px;
+  text-align: right;
+}
+
+.wg-speed-select {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-family: var(--font-mono);
+  outline: none;
+}
+
+.wg-legend {
+  display: flex;
+  gap: 12px;
+  padding: 8px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-card);
+  flex-wrap: wrap;
+}
+.wg-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition);
+}
+.wg-legend-item:hover { background: var(--bg-card-hover); }
+.wg-legend-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+
+.wg-info-panel {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 280px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  z-index: 10;
+  display: none;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.wg-info-panel.visible { display: block; }
+.wg-info-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+.wg-info-close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+}
+.wg-info-row {
+  font-size: 11px;
+  color: var(--text-secondary);
+  padding: 3px 0;
+}
+.wg-info-row strong { color: var(--text-primary); }
+
+@keyframes wgDetectionRing {
+  0% { box-shadow: 0 0 0 0 rgba(88,166,255,0.6); }
+  100% { box-shadow: 0 0 0 20px rgba(88,166,255,0); }
+}
+.wg-detection-flash {
+  animation: wgDetectionRing 0.6s ease-out;
+}
+
+/* What-If Mode */
+.whatif-section {
+  margin-top: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.whatif-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.whatif-change-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(210,153,34,0.15);
+  color: var(--high);
+  display: none;
+}
+.whatif-change-badge.visible { display: inline-block; }
+.whatif-editor {
+  padding: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+.whatif-host-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+}
+.whatif-host-name {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+.whatif-host-ip {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.whatif-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+.whatif-toggle-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.whatif-toggle {
+  position: relative;
+  width: 36px; height: 20px;
+  cursor: pointer;
+}
+.whatif-toggle input {
+  opacity: 0;
+  width: 0; height: 0;
+}
+.whatif-toggle-slider {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: var(--border);
+  border-radius: 10px;
+  transition: all 0.2s;
+}
+.whatif-toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 16px; height: 16px;
+  left: 2px; bottom: 2px;
+  background: var(--text-secondary);
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+.whatif-toggle input:checked + .whatif-toggle-slider {
+  background: var(--accent);
+}
+.whatif-toggle input:checked + .whatif-toggle-slider::before {
+  transform: translateX(16px);
+  background: white;
+}
+.whatif-toggle-row.changed .whatif-toggle-slider {
+  background: var(--high) !important;
+}
+.whatif-toggle-row.changed .whatif-toggle input:checked + .whatif-toggle-slider {
+  background: var(--high) !important;
+}
+
+.whatif-actions-bar {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-surface);
+}
+.whatif-changes-list {
+  font-size: 11px;
+  color: var(--text-muted);
+  flex: 1;
+}
+
+/* What-If Comparison View */
+.whatif-comparison {
+  padding: 16px;
+  display: none;
+}
+.whatif-comparison.visible { display: block; }
+
+.whatif-deltas {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.whatif-delta-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  text-align: center;
+}
+.whatif-delta-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+.whatif-delta-values {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+}
+.whatif-delta-arrow {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.whatif-delta-pct {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+.whatif-delta-pct.improved { color: var(--success); background: rgba(63,185,80,0.15); }
+.whatif-delta-pct.worsened { color: var(--critical); background: rgba(248,81,73,0.15); }
+.whatif-delta-pct.neutral { color: var(--text-muted); background: rgba(139,148,158,0.1); }
+
+.whatif-verdict {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.whatif-verdict.stopped { background: rgba(63,185,80,0.2); color: var(--success); }
+.whatif-verdict.hindered { background: rgba(210,153,34,0.2); color: var(--high); }
+.whatif-verdict.nochange { background: rgba(139,148,158,0.15); color: var(--text-muted); }
+
+.whatif-insight {
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(88,166,255,0.08);
+  border: 1px solid rgba(88,166,255,0.2);
+  border-radius: var(--radius);
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Defender node states */
+.wg-node-ring.state-isolated {
+  border-color: #58a6ff;
+  border-style: dashed;
+  box-shadow: 0 0 20px rgba(88,166,255,0.5), inset 0 0 12px rgba(88,166,255,0.2);
+  animation: wgNodeIsolated 2s ease-in-out infinite;
+}
+@keyframes wgNodeIsolated {
+  0%, 100% { box-shadow: 0 0 20px rgba(88,166,255,0.5); }
+  50% { box-shadow: 0 0 28px rgba(88,166,255,0.7); }
+}
+.wg-node-ring.state-shielded {
+  border-color: #3fb950;
+  box-shadow: 0 0 16px rgba(63,185,80,0.4), 0 0 30px rgba(63,185,80,0.15);
+}
+.wg-node-shield {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: rgba(63,185,80,0.9);
+  color: #fff;
+  font-size: 10px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 4;
+}
+.wg-node-shield.visible { display: flex; }
+
+/* ============================================================
+   SWARM MODE
+   ============================================================ */
+.swarm-config {
+  display: none;
+  gap: 12px;
+  margin-top: 8px;
+  padding: 10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.swarm-config.visible { display: flex; flex-wrap: wrap; align-items: center; }
+.swarm-input {
+  width: 70px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  padding: 5px 8px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  outline: none;
+}
+.swarm-input:focus { border-color: var(--accent); }
+.swarm-label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Swarm Progress */
+.swarm-progress {
+  padding: 16px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+}
+.swarm-progress-bar {
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 8px 0;
+}
+.swarm-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+
+/* Heatmap */
+.swarm-heatmap {
+  position: relative;
+  min-height: 320px;
+  background: var(--bg-primary);
+  background-image:
+    radial-gradient(circle at 50% 50%, rgba(248,81,73,0.03) 0%, transparent 70%),
+    linear-gradient(rgba(42,58,74,0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(42,58,74,0.08) 1px, transparent 1px);
+  background-size: 100% 100%, 40px 40px, 40px 40px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.heatmap-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.heatmap-ring {
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  border: 3px solid var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  transition: all 0.5s;
+}
+.heatmap-ring.critical { width: 72px; height: 72px; }
+.heatmap-ring.high { width: 60px; height: 60px; }
+.heatmap-ring.medium { width: 50px; height: 50px; }
+.heatmap-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.heatmap-rate {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* Bar Charts */
+.bar-chart { margin: 12px 0; }
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.bar-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  min-width: 120px;
+  text-align: right;
+  font-family: var(--font-mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bar-track {
+  flex: 1;
+  height: 20px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  padding-left: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  font-family: var(--font-mono);
+  min-width: 30px;
+  transition: width 0.5s ease;
+}
+
+/* Confidence sparkline */
+.sparkline-container {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 30px;
+}
+.sparkline-bar {
+  width: 8px;
+  background: var(--accent);
+  border-radius: 1px;
+  transition: height 0.3s;
+  opacity: 0.6;
+}
+.sparkline-bar:last-child { opacity: 1; }
+
+/* Swarm Stats Grid */
+.swarm-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.swarm-stat-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  text-align: center;
+}
+.swarm-stat-value {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.swarm-stat-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+}
+.swarm-stat-sub {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     MISSION STATUS BAR
+     ============================================================ -->
+<header id="mission-bar">
+  <div class="mb-brand">AI-SOC</div>
+
+  <div class="mb-section">
+    <div class="status-dot online" id="mb-svc-dot"></div>
+    <span class="mb-value" id="mb-svc-count">--/7</span>
+    <span class="mb-label">SERVICES</span>
+  </div>
+
+  <div class="mb-section">
+    <span class="mb-label">INCIDENTS</span>
+    <span class="mb-value" id="mb-incident-count">--</span>
+    <span id="mb-max-sev"></span>
+  </div>
+
+  <div class="mb-section">
+    <span class="mb-label">POSTURE</span>
+    <span class="grade-chip grade-B" id="mb-grade">--</span>
+    <div class="score-bar-wrap">
+      <div class="score-bar-fill" id="mb-score-bar" style="width:0%"></div>
+    </div>
+    <span class="mb-value" id="mb-score-num">--</span>
+  </div>
+
+  <div class="mb-section">
+    <span class="mb-label">WORKERS</span>
+    <span class="mb-value" id="mb-workers">--</span>
+    <span class="mb-label">Q</span>
+    <span class="mb-value" id="mb-queue">--</span>
+  </div>
+
+  <div class="mb-section">
+    <span class="mb-label">FEEDBACK</span>
+    <span class="mb-value" id="mb-feedback-total">--</span>
+    <span class="mb-label">FP</span>
+    <span class="mb-value" id="mb-fp-rate">--%</span>
+  </div>
+
+  <div class="mb-section" style="border-right:none;margin-left:auto;padding-right:0;">
+    <span class="mb-refresh" id="mb-refresh-time">Refreshing...</span>
+  </div>
+</header>
+
+<!-- ============================================================
+     MAIN CONTENT
+     ============================================================ -->
+<main class="main-content">
+
+  <!-- ── PRIORITY QUEUE ─────────────────────────────────────── -->
+  <section id="priority-queue">
+    <div class="section-header">
+      <div class="section-title">Priority Queue — Your Next Decisions</div>
+      <button class="btn btn-ghost btn-sm" onclick="loadIncidents()">Refresh</button>
+    </div>
+    <div id="incidents-list">
+      <div class="loading-row">
+        <div class="spinner" style="border-top-color:var(--accent)"></div>
+        Loading active incidents...
+      </div>
+    </div>
+  </section>
+
+  <!-- ── THREAT LANDSCAPE ───────────────────────────────────── -->
+  <section>
+    <div class="section-header">
+      <div class="section-title">Threat Landscape</div>
+    </div>
+    <div class="threat-landscape">
+
+      <!-- Network Map -->
+      <div class="network-map-panel">
+        <div class="section-title" style="margin-bottom:14px;">Network Topology</div>
+        <div id="network-topology-content">
+          <div class="network-segment">
+            <div class="segment-label">DMZ</div>
+            <div class="host-grid">
+              <div class="host-card" id="host-web-server-01">
+                <div class="host-name">web-server-01</div>
+                <div class="host-ip">10.0.0.10</div>
+                <div class="host-risk-bar-wrap"><div class="host-risk-bar" style="width:0%"></div></div>
+              </div>
+              <div class="host-card" id="host-mail-server-01">
+                <div class="host-name">mail-server-01</div>
+                <div class="host-ip">10.0.0.20</div>
+                <div class="host-risk-bar-wrap"><div class="host-risk-bar" style="width:0%"></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="network-segment">
+            <div class="segment-label">Internal</div>
+            <div class="host-grid">
+              <div class="host-card" id="host-workstation-01">
+                <div class="host-name">workstation-01</div>
+                <div class="host-ip">10.0.1.10</div>
+                <div class="host-risk-bar-wrap"><div class="host-risk-bar" style="width:0%"></div></div>
+              </div>
+              <div class="host-card" id="host-file-server-01">
+                <div class="host-name">file-server-01</div>
+                <div class="host-ip">10.0.1.20</div>
+                <div class="host-risk-bar-wrap"><div class="host-risk-bar" style="width:0%"></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="network-segment" style="margin-bottom:0">
+            <div class="segment-label">Critical</div>
+            <div class="host-grid">
+              <div class="host-card" id="host-prod-db-01">
+                <div class="host-name">prod-db-01</div>
+                <div class="host-ip">10.0.2.10</div>
+                <div class="host-risk-bar-wrap"><div class="host-risk-bar" style="width:0%"></div></div>
+              </div>
+              <div class="host-card" id="host-dc-01">
+                <div class="host-name">dc-01</div>
+                <div class="host-ip">10.0.2.20</div>
+                <div class="host-risk-bar-wrap"><div class="host-risk-bar" style="width:0%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Simulation + Risk -->
+      <div class="sim-risk-panel">
+
+        <!-- Simulation -->
+        <div class="sim-panel">
+          <div class="section-title" style="margin-bottom:12px;">Adversary Simulation</div>
+          <div class="sim-controls">
+            <button class="btn btn-danger btn-run-sim btn-lg" id="btn-sim" onclick="runSimulation()">
+              Run Simulation
+            </button>
+            <input class="timestep-input" type="number" id="sim-timesteps" value="3" min="1" max="10">
+            <span class="timestep-label">timesteps</span>
+          </div>
+          <div style="margin-top:8px;display:flex;align-items:center;gap:8px;">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text-secondary);">
+              <input type="checkbox" id="sim-use-wazuh" checked style="accent-color:var(--accent);cursor:pointer;">
+              <span>Use live Wazuh infrastructure</span>
+            </label>
+            <span id="sim-env-badge" style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(88,166,255,0.15);color:var(--accent);display:none;"></span>
+          </div>
+          <div style="margin-top:8px;display:flex;align-items:center;gap:8px;">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text-secondary);">
+              <input type="checkbox" id="sim-swarm-mode" style="accent-color:var(--critical);cursor:pointer;" onchange="toggleSwarmConfig()">
+              <span style="color:var(--critical);font-weight:600;">Swarm Mode</span>
+            </label>
+            <span style="font-size:10px;color:var(--text-muted);">(100s-1000s of agents)</span>
+          </div>
+          <div class="swarm-config" id="swarm-config">
+            <input class="swarm-input" type="number" id="swarm-size" value="50" min="10" max="500">
+            <span class="swarm-label">followers/archetype</span>
+            <input class="swarm-input" type="number" id="mc-runs" value="5" min="1" max="50">
+            <span class="swarm-label">Monte Carlo batches</span>
+          </div>
+          <div id="sim-status-row" class="hidden">
+            <div class="sim-status">
+              <div class="spinner"></div>
+              <span>Simulating 4 attacker agents... (this may take 30-90s)</span>
+            </div>
+          </div>
+          <div id="sim-results"></div>
+        </div>
+
+        <!-- Risk Scores -->
+        <div class="risk-panel">
+          <div class="section-title" style="margin-bottom:12px;">Security Risk Scores</div>
+          <div class="risk-grade-display">
+            <div class="risk-grade-big grade-B" id="risk-grade-big">--</div>
+            <div class="risk-grade-meta">
+              <div class="risk-grade-label" id="risk-grade-label">Loading...</div>
+              <div class="risk-grade-sub" id="risk-grade-sub"></div>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="refreshRiskScores()">Refresh Scores</button>
+          </div>
+          <div id="risk-table-wrap">
+            <div class="loading-row">
+              <div class="spinner" style="border-top-color:var(--accent)"></div>
+              Loading risk scores...
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SYSTEM FOOTER ──────────────────────────────────────── -->
+  <section class="system-footer">
+    <div class="footer-toggle" onclick="toggleFooter()">
+      <span class="footer-toggle-title">System Details</span>
+      <span class="footer-chevron" id="footer-chevron">&#9660;</span>
+    </div>
+    <div class="footer-body" id="footer-body">
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div class="section-title">Service Health</div>
+        <span id="footer-container-badge" class="sev-badge info">-- Containers</span>
+      </div>
+      <div class="footer-grid" id="services-grid">
+        <div class="loading-row">
+          <div class="spinner" style="border-top-color:var(--accent)"></div>
+          Loading services...
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="footer-row">
+        <span class="section-title" style="margin-bottom:0;">Quick Links</span>
+        <a class="quick-link" href="http://localhost:3001" target="_blank"><span class="ql-dot"></span>Grafana</a>
+        <a class="quick-link" href="https://localhost:443" target="_blank"><span class="ql-dot" style="background:var(--high)"></span>Wazuh</a>
+        <a class="quick-link" href="http://localhost:9090" target="_blank"><span class="ql-dot" style="background:var(--success)"></span>Prometheus</a>
+        <a class="quick-link" href="http://localhost:8200" target="_blank"><span class="ql-dot" style="background:var(--medium)"></span>ChromaDB</a>
+        <a class="quick-link" href="http://localhost:11434" target="_blank"><span class="ql-dot" style="background:var(--info)"></span>Ollama</a>
+      </div>
+
+      <div class="divider"></div>
+
+      <div style="display:flex;align-items:flex-start;gap:32px;flex-wrap:wrap;">
+        <div>
+          <div class="subsection-title">Pending Rules</div>
+          <span id="pending-rules-count" class="mb-value">--</span>
+          <span class="text-muted" style="font-size:11px;margin-left:4px;">awaiting approval</span>
+        </div>
+        <div>
+          <div class="subsection-title">RAG Collections</div>
+          <div class="rag-collections" id="rag-collections">
+            <span class="text-muted" style="font-size:11px;">Loading...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<!-- Chat Overlay Panel -->
+<div class="chat-overlay" id="chat-overlay">
+  <div class="chat-header">
+    <div class="chat-agent-dot" id="chat-agent-dot"></div>
+    <div>
+      <div class="chat-agent-name" id="chat-agent-name">Agent</div>
+      <div class="chat-agent-type" id="chat-agent-type">Archetype</div>
+    </div>
+    <button class="chat-close" onclick="closeChatPanel()">&times;</button>
+  </div>
+  <div class="chat-messages" id="chat-messages"></div>
+  <div class="chat-suggestions" id="chat-suggestions"></div>
+  <div class="chat-input-row">
+    <input class="chat-input" id="chat-input" type="text" placeholder="Ask the attacker..." onkeydown="if(event.key==='Enter')sendChatMessage()">
+    <button class="chat-send" id="chat-send-btn" onclick="sendChatMessage()">Send</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+{% raw %}<script>
+// ── CONSTANTS ────────────────────────────────────────────────
+const ANALYST_ID = 'analyst-1';
+const KILL_CHAIN_STAGES = ['RECON','ACCESS','EXEC','PERSIST','PRIV ESC','LATERAL','COLLECT','C2','EXFIL','IMPACT'];
+const KILL_CHAIN_KEYS = ['recon','initial_access','execution','persistence','privilege_escalation','lateral_movement','collection','command_and_control','exfiltration','impact'];
+let refreshTimer = null;
+
+// ── UTILITY ──────────────────────────────────────────────────
+function toast(msg, type = 'info', duration = 3500) {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => { t.style.animation = 'fadeDim 0.3s ease forwards'; setTimeout(() => t.remove(), 300); }, duration);
+}
+
+function timeAgo(isoStr) {
+  if (!isoStr) return 'unknown';
+  const diff = Date.now() - new Date(isoStr).getTime();
+  const s = Math.floor(diff / 1000);
+  if (s < 60) return `${s}s ago`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h/24)}d ago`;
+}
+
+function sevClass(sev) {
+  if (!sev) return 'info';
+  const s = sev.toLowerCase();
+  if (s === 'critical') return 'critical';
+  if (s === 'high') return 'high';
+  if (s === 'medium') return 'medium';
+  if (s === 'low') return 'low';
+  return 'info';
+}
+
+function scoreColor(score) {
+  if (score < 25) return 'var(--success)';
+  if (score < 50) return 'var(--high)';
+  if (score < 75) return 'var(--critical)';
+  return 'var(--critical)';
+}
+
+function riskClass(score) {
+  if (score < 25) return 'risk-low';
+  if (score < 75) return 'risk-medium';
+  return 'risk-high';
+}
+
+function gradeClass(grade) {
+  if (!grade) return 'grade-B';
+  const g = grade.toUpperCase();
+  if (g === 'A') return 'grade-A';
+  if (g === 'B') return 'grade-B';
+  if (g === 'C') return 'grade-C';
+  if (g === 'D') return 'grade-D';
+  return 'grade-F';
+}
+
+function gradeLabel(grade) {
+  if (!grade) return 'Unknown';
+  const g = grade.toUpperCase();
+  if (g === 'A') return 'Excellent Security Posture';
+  if (g === 'B') return 'Good Security Posture';
+  if (g === 'C') return 'Moderate Risk';
+  if (g === 'D') return 'High Risk';
+  return 'Critical Risk';
+}
+
+async function apiFetch(url, opts = {}) {
+  try {
+    const resp = await fetch(url, opts);
+    const data = await resp.json().catch(() => ({}));
+    return { ok: resp.ok, status: resp.status, data };
+  } catch (e) {
+    return { ok: false, status: 0, data: { error: 'Service unavailable' } };
+  }
+}
+
+function setButtonLoading(btn, loading, originalText) {
+  if (loading) {
+    btn.disabled = true;
+    btn._orig = btn.innerHTML;
+    btn.innerHTML = `<div class="spinner" style="border-top-color:currentColor"></div> Loading...`;
+  } else {
+    btn.disabled = false;
+    btn.innerHTML = btn._orig || originalText || btn.innerHTML;
+  }
+}
+
+function flashBtn(btn, success = true) {
+  const orig = btn.innerHTML;
+  btn.innerHTML = success ? '&#10003; Done' : '&#10007; Failed';
+  btn.style.transition = 'all 0.2s';
+  setTimeout(() => { btn.innerHTML = orig; }, 1800);
+}
+
+// ── MISSION BAR ──────────────────────────────────────────────
+async function refreshMissionBar() {
+  document.getElementById('mb-refresh-time').textContent = 'Refreshing...';
+
+  const [svcRes, incRes, riskRes, workerRes, fbRes] = await Promise.allSettled([
+    apiFetch('/api/services'),
+    apiFetch('/api/incidents/active'),
+    apiFetch('/api/risk-summary'),
+    apiFetch('/api/workers/stats'),
+    apiFetch('/api/feedback/stats'),
+  ]);
+
+  // Services
+  if (svcRes.status === 'fulfilled' && svcRes.value.ok) {
+    const d = svcRes.value.data;
+    const h = d.healthy_count ?? 0;
+    const t = d.total_count ?? 7;
+    document.getElementById('mb-svc-count').textContent = `${h}/${t}`;
+    const dot = document.getElementById('mb-svc-dot');
+    dot.className = 'status-dot ' + (h === t ? 'online' : h === 0 ? 'offline' : 'partial');
+  }
+
+  // Incidents
+  if (incRes.status === 'fulfilled' && incRes.value.ok) {
+    const d = incRes.value.data;
+    const incidents = Array.isArray(d) ? d : (d.incidents || []);
+    document.getElementById('mb-incident-count').textContent = incidents.length;
+    const maxSev = incidents.reduce((acc, inc) => {
+      const order = { critical: 4, high: 3, medium: 2, low: 1, info: 0 };
+      const s = sevClass((inc.severity || '').toLowerCase());
+      return (order[s] || 0) > (order[acc] || 0) ? s : acc;
+    }, 'info');
+    const badge = document.getElementById('mb-max-sev');
+    badge.innerHTML = incidents.length > 0 ? `<span class="sev-badge ${maxSev}">${maxSev.toUpperCase()}</span>` : '';
+  } else {
+    document.getElementById('mb-incident-count').textContent = '--';
+  }
+
+  // Risk / Posture
+  if (riskRes.status === 'fulfilled' && riskRes.value.ok) {
+    const d = riskRes.value.data;
+    const grade = d.overall_security_posture_rating || d.grade || '--';
+    const score = d.overall_score || d.score || 0;
+    const gradeEl = document.getElementById('mb-grade');
+    gradeEl.textContent = grade;
+    gradeEl.className = `grade-chip ${gradeClass(grade)}`;
+    document.getElementById('mb-score-bar').style.width = `${Math.min(score, 100)}%`;
+    document.getElementById('mb-score-num').textContent = `${Math.round(score)}/100`;
+  }
+
+  // Workers
+  if (workerRes.status === 'fulfilled' && workerRes.value.ok) {
+    const d = workerRes.value.data;
+    document.getElementById('mb-workers').textContent = d.active_workers ?? d.workers ?? '--';
+    document.getElementById('mb-queue').textContent = d.queue_depth ?? d.queued ?? '--';
+  }
+
+  // Feedback
+  if (fbRes.status === 'fulfilled' && fbRes.value.ok) {
+    const d = fbRes.value.data;
+    document.getElementById('mb-feedback-total').textContent = d.total_feedback ?? d.total ?? '--';
+    const fp = d.false_positive_rate ?? d.fp_rate;
+    document.getElementById('mb-fp-rate').textContent = fp != null ? `${(fp * 100).toFixed(1)}%` : '--%';
+  }
+
+  const now = new Date();
+  document.getElementById('mb-refresh-time').textContent = `Updated ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}`;
+}
+
+// ── KILL CHAIN VISUALIZATION ──────────────────────────────────
+function buildKillChain(stagesSeen, severity) {
+  const seenNorm = (stagesSeen || []).map(s => s.toLowerCase().replace(/[^a-z]/g,''));
+  let currentIdx = -1;
+  for (let i = KILL_CHAIN_KEYS.length - 1; i >= 0; i--) {
+    if (seenNorm.includes(KILL_CHAIN_KEYS[i].replace(/[^a-z]/g,''))) {
+      currentIdx = i;
+      break;
+    }
+  }
+
+  const sc = sevClass(severity);
+  const dots = KILL_CHAIN_STAGES.map((label, i) => {
+    const reached = i <= currentIdx;
+    const current = i === currentIdx;
+    const cls = `kc-stage${reached ? ' reached' : ''}${current ? ` current sev-${sc}` : ''}`;
+    return `<div class="${cls}"><div class="kc-dot"></div><div class="kc-name">${label}</div></div>`;
+  }).join('');
+
+  return `<div class="kill-chain"><div class="kc-label">Kill Chain Progress</div><div class="kc-track">${dots}</div></div>`;
+}
+
+// ── INVESTIGATION WORKSPACE ───────────────────────────────────
+async function openInvestigation(incidentId, cardEl, alertId) {
+  const existing = cardEl.querySelector('.investigation-workspace');
+  if (existing && existing.classList.contains('open')) {
+    existing.classList.remove('open');
+    existing.style.display = 'none';
+    const btn = cardEl.querySelector('.btn-investigate');
+    if (btn) btn.classList.remove('active');
+    return;
+  }
+
+  const btn = cardEl.querySelector('.btn-investigate');
+  if (btn) {
+    btn.classList.add('active');
+    setButtonLoading(btn, true);
+  }
+
+  let wsEl = cardEl.querySelector('.investigation-workspace');
+  if (!wsEl) {
+    wsEl = document.createElement('div');
+    wsEl.className = 'investigation-workspace';
+    wsEl.innerHTML = buildWorkspaceShell(incidentId, alertId);
+    cardEl.appendChild(wsEl);
+  }
+
+  wsEl.classList.add('open');
+  wsEl.style.display = '';
+
+  if (btn) setButtonLoading(btn, false);
+
+  // Load workspace data
+  await loadWorkspaceData(incidentId, alertId, wsEl);
+}
+
+function buildWorkspaceShell(incidentId, alertId) {
+  return `
+    <div class="iw-col" id="iw-timeline-${incidentId}">
+      <div class="iw-col-title">Alert Timeline</div>
+      <div class="loading-row"><div class="spinner" style="border-top-color:var(--accent)"></div> Loading alerts...</div>
+    </div>
+    <div class="iw-col" id="iw-intel-${incidentId}">
+      <div class="iw-col-title">Intelligence</div>
+      <div class="loading-row"><div class="spinner" style="border-top-color:var(--accent)"></div> Loading intelligence...</div>
+    </div>
+    <div class="iw-col" id="iw-actions-${incidentId}">
+      <div class="iw-col-title">Actions</div>
+      ${buildActionsPanel(alertId, incidentId)}
+    </div>
+    <div class="iw-close-bar">
+      <button class="btn btn-ghost btn-sm" onclick="closeWorkspace(this)">Close Workspace</button>
+    </div>
+  `;
+}
+
+async function loadWorkspaceData(incidentId, alertId, wsEl) {
+  const [incRes] = await Promise.allSettled([apiFetch(`/api/incidents/${incidentId}`)]);
+
+  let incident = null;
+  if (incRes.status === 'fulfilled' && incRes.value.ok) {
+    incident = incRes.value.data;
+  }
+
+  // Timeline
+  const timelineEl = wsEl.querySelector(`#iw-timeline-${incidentId}`);
+  if (timelineEl) {
+    timelineEl.querySelector('.iw-col-title').insertAdjacentText('afterend', '');
+    const alerts = incident?.alerts || [];
+    if (alerts.length === 0) {
+      timelineEl.innerHTML = `<div class="iw-col-title">Alert Timeline</div><div class="text-muted" style="font-size:12px;padding:8px 0;">No alerts found.</div>`;
+    } else {
+      let html = '<div class="iw-col-title">Alert Timeline</div>';
+      alerts.forEach((a, idx) => {
+        const sc = sevClass(a.severity);
+        html += `
+          <div class="timeline-alert" onclick="toggleAlertExpand(this)">
+            <div class="ta-header">
+              <span class="sev-badge ${sc}">${(a.severity||'INFO').toUpperCase()}</span>
+              <span class="ta-time">${timeAgo(a.timestamp)}</span>
+              <span class="ta-category">${a.category || a.alert_type || ''}</span>
+            </div>
+            <div style="font-size:12px;color:var(--text-secondary);font-family:var(--font-mono);">${a.alert_id || a.id || 'alert-'+idx}</div>
+            <div class="ta-expand">
+              <div><strong>Rule:</strong> ${a.rule_description || 'N/A'}</div>
+              <div style="margin-top:4px;"><span class="ip-tag" style="font-size:10px;">${a.source_ip || '?'}</span> <span style="color:var(--text-muted)">&#8594;</span> <span class="ip-tag" style="font-size:10px;">${a.destination_ip || '?'}</span></div>
+              ${a.full_log ? `<div class="ta-logline">${escHtml(a.full_log)}</div>` : ''}
+            </div>
+          </div>`;
+      });
+      timelineEl.innerHTML = html;
+    }
+  }
+
+  // Intel
+  const intelEl = wsEl.querySelector(`#iw-intel-${incidentId}`);
+  if (intelEl && incident) {
+    let html = '<div class="iw-col-title">Intelligence</div>';
+
+    // MITRE
+    const techniques = incident.mitre_techniques || [];
+    const tactics = incident.mitre_tactics || [];
+    if (techniques.length || tactics.length) {
+      html += `<div class="subsection-title">MITRE ATT&CK</div><div style="margin-bottom:8px;">`;
+      tactics.forEach(t => { html += `<span class="mitre-tag" style="background:rgba(210,153,34,0.1);border-color:rgba(210,153,34,0.3);color:var(--high);">${t}</span>`; });
+      techniques.forEach(t => { html += `<span class="mitre-tag">${t}</span>`; });
+      html += `</div>`;
+    }
+
+    // RAG
+    html += `<div class="subsection-title">Threat Intelligence (RAG)</div><div id="rag-${incidentId}"><div class="loading-row"><div class="spinner" style="border-top-color:var(--accent);width:10px;height:10px;"></div> Querying...</div></div>`;
+
+    // Historical context
+    const srcIPs = Array.from(new Set((incident.alerts||[]).map(a=>a.source_ip).filter(Boolean)));
+    html += `<div class="subsection-title">Historical Context</div><div id="hist-${incidentId}">`;
+    if (srcIPs.length) {
+      srcIPs.slice(0,2).forEach(ip => { html += `<div class="history-stat">Loading history for <strong>${ip}</strong>...</div>`; });
+    } else {
+      html += `<div class="text-muted" style="font-size:12px;">No source IPs identified.</div>`;
+    }
+    html += `</div>`;
+
+    intelEl.innerHTML = html;
+
+    // Async RAG query
+    loadRAGIntel(incidentId, incident);
+
+    // Historical
+    if (srcIPs.length) {
+      loadHistoricalContext(incidentId, srcIPs.slice(0, 2));
+    }
+  } else if (intelEl) {
+    intelEl.innerHTML = '<div class="iw-col-title">Intelligence</div><div class="text-muted" style="font-size:12px;padding:8px 0;">Unable to load incident details.</div>';
+  }
+}
+
+async function loadRAGIntel(incidentId, incident) {
+  const el = document.getElementById(`rag-${incidentId}`);
+  if (!el) return;
+
+  const query = [incident.summary, ...(incident.mitre_techniques||[]), ...(incident.mitre_tactics||[])].filter(Boolean).join(' ');
+  const res = await apiFetch('/api/rag/retrieve', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query, top_k: 3, n_results: 3 }),
+  });
+
+  if (!res.ok || !res.data) {
+    el.innerHTML = '<div class="text-muted" style="font-size:12px;">RAG service unavailable.</div>';
+    return;
+  }
+
+  const results = res.data.results || res.data.documents || res.data.matches || [];
+  if (!results.length) {
+    el.innerHTML = '<div class="text-muted" style="font-size:12px;">No relevant techniques found.</div>';
+    return;
+  }
+
+  let html = '';
+  results.slice(0, 3).forEach(r => {
+    const tid = r.technique_id || r.id || r.metadata?.technique_id || '';
+    const desc = r.description || r.text || r.content || r.document || '';
+    html += `<div class="rag-result"><div class="rag-technique">${tid}</div><div class="rag-desc">${escHtml(desc).slice(0, 200)}${desc.length > 200 ? '...' : ''}</div></div>`;
+  });
+  el.innerHTML = html || '<div class="text-muted" style="font-size:12px;">No results.</div>';
+}
+
+async function loadHistoricalContext(incidentId, ips) {
+  const container = document.getElementById(`hist-${incidentId}`);
+  if (!container) return;
+  let html = '';
+  for (const ip of ips) {
+    const res = await apiFetch(`/api/alerts?source_ip=${encodeURIComponent(ip)}&limit=5`);
+    const alerts = res.ok ? (Array.isArray(res.data) ? res.data : (res.data.alerts || [])) : [];
+    html += `<div class="history-stat"><strong>${alerts.length}</strong> previous alerts from <span class="ip-tag" style="font-size:10px;">${ip}</span> (last 5 fetched)</div>`;
+  }
+  container.innerHTML = html || '<div class="text-muted" style="font-size:12px;">No history found.</div>';
+}
+
+function buildActionsPanel(alertId, incidentId) {
+  return `
+    <div class="iw-btn-row">
+      <button class="btn btn-danger btn-sm" onclick="postAction('${alertId}','block_ip','Block IP initiated',this)">Block IP</button>
+      <button class="btn btn-danger btn-sm" onclick="postAction('${alertId}','isolate_host','Host isolation initiated',this)">Isolate Host</button>
+      <button class="btn btn-ghost btn-sm" onclick="postAction('${alertId}','rotate_credentials','Credential rotation initiated',this)">Rotate Creds</button>
+    </div>
+    <div class="divider"></div>
+    <div class="iw-form-row">
+      <label>Severity Correction</label>
+      <select class="iw-select" id="iw-sev-${alertId}">
+        <option value="">-- no change --</option>
+        <option value="critical">Critical</option>
+        <option value="high">High</option>
+        <option value="medium">Medium</option>
+        <option value="low">Low</option>
+        <option value="info">Info</option>
+      </select>
+    </div>
+    <div class="iw-form-row">
+      <label>Category Correction</label>
+      <select class="iw-select" id="iw-cat-${alertId}">
+        <option value="">-- no change --</option>
+        <option value="brute_force">Brute Force</option>
+        <option value="lateral_movement">Lateral Movement</option>
+        <option value="data_exfiltration">Data Exfiltration</option>
+        <option value="malware">Malware</option>
+        <option value="reconnaissance">Reconnaissance</option>
+        <option value="privilege_escalation">Privilege Escalation</option>
+        <option value="c2_communication">C2 Communication</option>
+        <option value="policy_violation">Policy Violation</option>
+      </select>
+    </div>
+    <div class="iw-form-row">
+      <label>True Label</label>
+      <select class="iw-select" id="iw-label-${alertId}">
+        <option value="">-- no change --</option>
+        <option value="ATTACK">ATTACK</option>
+        <option value="BENIGN">BENIGN</option>
+      </select>
+    </div>
+    <div class="iw-form-row">
+      <label>Notes</label>
+      <textarea class="iw-textarea" id="iw-notes-${alertId}" placeholder="Analyst notes..."></textarea>
+    </div>
+    <button class="btn btn-primary" onclick="submitFeedback('${alertId}', this)" style="width:100%;justify-content:center;">Submit Feedback</button>
+    <div class="divider"></div>
+    <div class="subsection-title">Detection Rule Generation</div>
+    <button class="btn btn-ghost btn-sm" onclick="generateRule('${alertId}', '${incidentId}', this)" style="width:100%;justify-content:center;margin-bottom:6px;">Generate Detection Rule</button>
+    <pre class="rule-output" id="rule-out-${alertId}"></pre>
+    <div id="rule-approve-${alertId}" class="hidden" style="margin-top:6px;">
+      <button class="btn btn-contain btn-sm" onclick="approveRule('${alertId}', this)" style="width:100%;justify-content:center;">Approve Rule</button>
+    </div>
+  `;
+}
+
+function toggleAlertExpand(el) {
+  const exp = el.querySelector('.ta-expand');
+  if (exp) exp.classList.toggle('open');
+}
+
+async function postAction(alertId, action, msg, btn) {
+  setButtonLoading(btn, true);
+  const res = await apiFetch(`/api/feedback/${alertId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ analyst_id: ANALYST_ID, notes: msg, action }),
+  });
+  setButtonLoading(btn, false);
+  if (res.ok) { toast(msg, 'success'); flashBtn(btn, true); }
+  else { toast(`Failed: ${res.data?.error || 'Unknown error'}`, 'error'); flashBtn(btn, false); }
+}
+
+async function submitFeedback(alertId, btn) {
+  const sev = document.getElementById(`iw-sev-${alertId}`)?.value;
+  const cat = document.getElementById(`iw-cat-${alertId}`)?.value;
+  const label = document.getElementById(`iw-label-${alertId}`)?.value;
+  const notes = document.getElementById(`iw-notes-${alertId}`)?.value;
+
+  const payload = { analyst_id: ANALYST_ID };
+  if (sev) payload.corrected_severity = sev;
+  if (cat) payload.corrected_category = cat;
+  if (label) { payload.true_label = label; payload.is_false_positive = (label === 'BENIGN'); }
+  if (notes) payload.notes = notes;
+
+  setButtonLoading(btn, true);
+  const res = await apiFetch(`/api/feedback/${alertId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  setButtonLoading(btn, false);
+  if (res.ok) { toast('Feedback submitted successfully', 'success'); flashBtn(btn, true); }
+  else { toast(`Feedback error: ${res.data?.error || 'Unknown'}`, 'error'); flashBtn(btn, false); }
+}
+
+let _pendingRuleId = null;
+async function generateRule(alertId, incidentId, btn) {
+  setButtonLoading(btn, true);
+  const res = await apiFetch('/api/generate-rule', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ alert_id: alertId, incident_id: incidentId }),
+  });
+  setButtonLoading(btn, false);
+  const outEl = document.getElementById(`rule-out-${alertId}`);
+  const approveEl = document.getElementById(`rule-approve-${alertId}`);
+  if (res.ok && outEl) {
+    const rule = res.data.rule_content || res.data.rule || res.data.sigma_rule || JSON.stringify(res.data, null, 2);
+    _pendingRuleId = res.data.rule_id || res.data.id || alertId;
+    outEl.textContent = rule;
+    outEl.classList.add('visible');
+    if (approveEl) approveEl.classList.remove('hidden');
+    toast('Detection rule generated', 'success');
+  } else {
+    toast('Rule generation failed', 'error');
+  }
+}
+
+async function approveRule(alertId, btn) {
+  if (!_pendingRuleId) { toast('No rule pending approval', 'warning'); return; }
+  setButtonLoading(btn, true);
+  const res = await apiFetch(`/api/rules/${_pendingRuleId}/approve`, { method: 'PUT' });
+  setButtonLoading(btn, false);
+  if (res.ok) { toast('Rule approved and activated', 'success'); flashBtn(btn, true); }
+  else { toast(`Approve failed: ${res.data?.error || 'Unknown'}`, 'error'); }
+}
+
+function closeWorkspace(btn) {
+  const ws = btn.closest('.investigation-workspace');
+  if (ws) {
+    ws.classList.remove('open');
+    ws.style.display = 'none';
+    const card = ws.closest('.incident-card');
+    if (card) {
+      const invBtn = card.querySelector('.btn-investigate');
+      if (invBtn) invBtn.classList.remove('active');
+    }
+  }
+}
+
+// ── INCIDENTS LIST ───────────────────────────────────────────
+async function loadIncidents() {
+  const container = document.getElementById('incidents-list');
+  container.innerHTML = `<div class="loading-row"><div class="spinner" style="border-top-color:var(--accent)"></div> Loading active incidents...</div>`;
+
+  const res = await apiFetch('/api/incidents/active');
+  if (!res.ok) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon" style="background:rgba(248,81,73,0.1);border-color:rgba(248,81,73,0.3);">!</div><div class="empty-title">Service Unavailable</div><div class="empty-sub">${res.data?.error || 'Cannot reach correlation engine. Check service health.'}</div></div>`;
+    return;
+  }
+
+  const incidents = Array.isArray(res.data) ? res.data : (res.data.incidents || []);
+
+  if (!incidents.length) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">&#10003;</div>
+        <div class="empty-title">All Clear</div>
+        <div class="empty-sub">No active incidents requiring attention. Continue monitoring.</div>
+      </div>`;
+    return;
+  }
+
+  const sorted = incidents.slice().sort((a, b) => {
+    const order = { critical: 4, high: 3, medium: 2, low: 1, info: 0 };
+    return (order[sevClass(b.severity)] || 0) - (order[sevClass(a.severity)] || 0);
+  });
+
+  container.innerHTML = '';
+  sorted.forEach(inc => {
+    const el = buildIncidentCard(inc);
+    container.appendChild(el);
+  });
+}
+
+function buildIncidentCard(inc) {
+  const sc = sevClass(inc.severity);
+  const alerts = inc.alerts || [];
+  const firstAlertId = inc.first_alert_id || (alerts[0]?.alert_id) || (alerts[0]?.id) || inc.incident_id;
+  const srcIPs = [...new Set(alerts.map(a => a.source_ip).filter(Boolean))].slice(0, 3);
+  const dstIPs = [...new Set(alerts.map(a => a.destination_ip).filter(Boolean))].slice(0, 3);
+  const stages = inc.kill_chain_stages_seen || inc.kill_chain_stages || [];
+
+  const div = document.createElement('div');
+  div.className = `incident-card sev-${sc}`;
+  div.dataset.incidentId = inc.incident_id || inc.id;
+
+  const ipFlow = (srcIPs.length || dstIPs.length) ? `
+    <div class="ic-flow">
+      ${srcIPs.map(ip => `<span class="ip-tag">${ip}</span>`).join(' ')}
+      ${srcIPs.length && dstIPs.length ? '<span class="ic-flow-arrow">&#8594;</span>' : ''}
+      ${dstIPs.map(ip => `<span class="ip-tag">${ip}</span>`).join(' ')}
+    </div>` : '';
+
+  div.innerHTML = `
+    <div class="ic-header">
+      <span class="sev-badge ${sc}">${(inc.severity || 'INFO').toUpperCase()}</span>
+      <div class="ic-meta">
+        <div class="ic-id-row">
+          <span class="ic-id">${inc.incident_id || inc.id || 'INC-???'}</span>
+          <span class="ic-alert-count">${alerts.length || inc.alert_count || 0} alerts</span>
+          <span class="ic-time">${timeAgo(inc.first_seen || inc.created_at || inc.timestamp)}</span>
+        </div>
+        <div class="ic-summary">${escHtml(inc.summary || inc.description || 'No summary available.')}</div>
+      </div>
+    </div>
+    ${buildKillChain(stages, inc.severity)}
+    ${ipFlow}
+    <div class="ic-actions">
+      <button class="btn btn-contain" onclick="confirmContain('${firstAlertId}', this)">Confirm &amp; Contain</button>
+      <button class="btn btn-fp" onclick="markFalsePositive('${firstAlertId}', this)">False Positive</button>
+      <button class="btn btn-investigate" onclick="openInvestigation('${inc.incident_id || inc.id}', this.closest('.incident-card'), '${firstAlertId}')">Investigate</button>
+    </div>`;
+
+  return div;
+}
+
+async function confirmContain(alertId, btn) {
+  const card = btn.closest('.incident-card');
+  setButtonLoading(btn, true);
+  const res = await apiFetch(`/api/feedback/${alertId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ analyst_id: ANALYST_ID, is_false_positive: false, true_label: 'ATTACK' }),
+  });
+  setButtonLoading(btn, false);
+  if (res.ok) {
+    toast('Incident confirmed and contained', 'success');
+    card.classList.add('flash-contain');
+    setTimeout(() => { card.classList.add('action-contain'); setTimeout(() => card.remove(), 600); }, 600);
+  } else {
+    toast(`Error: ${res.data?.error || 'Feedback service unavailable'}`, 'error');
+    flashBtn(btn, false);
+  }
+}
+
+async function markFalsePositive(alertId, btn) {
+  const card = btn.closest('.incident-card');
+  setButtonLoading(btn, true);
+  const res = await apiFetch(`/api/feedback/${alertId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ analyst_id: ANALYST_ID, is_false_positive: true, true_label: 'BENIGN' }),
+  });
+  setButtonLoading(btn, false);
+  if (res.ok) {
+    toast('Marked as false positive', 'info');
+    card.classList.add('flash-fp');
+    setTimeout(() => { card.classList.add('action-fp'); setTimeout(() => card.remove(), 600); }, 600);
+  } else {
+    toast(`Error: ${res.data?.error || 'Feedback service unavailable'}`, 'error');
+    flashBtn(btn, false);
+  }
+}
+
+// ── SIMULATION ───────────────────────────────────────────────
+function renderWazuhTopology(envData) {
+  const topoEl = document.getElementById('network-topology-content');
+  if (!topoEl || !envData) return;
+  const hosts = envData.hosts || {};
+  const segments = envData.segments || {};
+  let html = '';
+  if (Object.keys(segments).length > 0) {
+    for (const [segName, seg] of Object.entries(segments)) {
+      html += `<div class="network-segment"><div class="segment-label">${escHtml(segName)}</div><div class="host-grid">`;
+      for (const ip of (seg.hosts || [])) {
+        const h = hosts[ip] || {};
+        const svcCount = (h.services || []).length;
+        const cveCount = (h.services || []).reduce((n, s) => n + (s.cves || []).length, 0);
+        const defenses = h.defenses || {};
+        const defList = Object.entries(defenses).filter(([,v]) => v).map(([k]) => k.replace(/_/g,' ')).slice(0, 3);
+        html += `<div class="host-card" id="host-${escHtml(h.hostname || ip)}">
+          <div class="host-name">${escHtml(h.hostname || ip)}</div>
+          <div class="host-ip">${escHtml(ip)}</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:4px;">
+            ${svcCount} service${svcCount !== 1 ? 's' : ''}${cveCount > 0 ? ` · <span style="color:var(--critical);">${cveCount} CVE${cveCount !== 1 ? 's' : ''}</span>` : ''}
+          </div>
+          ${defList.length > 0 ? `<div style="font-size:10px;color:var(--success);margin-top:2px;">${defList.join(', ')}</div>` : ''}
+          <div class="host-risk-bar-wrap"><div class="host-risk-bar" style="width:0%"></div></div>
+        </div>`;
+      }
+      html += '</div></div>';
+    }
+  } else {
+    for (const [ip, h] of Object.entries(hosts)) {
+      html += `<div class="network-segment"><div class="segment-label">${escHtml(h.hostname || ip)}</div><div class="host-grid">`;
+      const svcCount = (h.services || []).length;
+      const cveCount = (h.services || []).reduce((n, s) => n + (s.cves || []).length, 0);
+      html += `<div class="host-card"><div class="host-name">${escHtml(h.hostname || ip)}</div><div class="host-ip">${escHtml(ip)}</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:4px;">${svcCount} service${svcCount !== 1 ? 's' : ''}${cveCount > 0 ? ` · <span style="color:var(--critical);">${cveCount} CVE${cveCount !== 1 ? 's' : ''}</span>` : ''}</div>
+        <div class="host-risk-bar-wrap"><div class="host-risk-bar" style="width:0%"></div></div></div>`;
+      html += '</div></div>';
+    }
+  }
+  topoEl.innerHTML = html;
+}
+
+async function runSimulation() {
+  if (document.getElementById('sim-swarm-mode')?.checked) { runSwarmSimulation(); return; }
+  const btn = document.getElementById('btn-sim');
+  const timesteps = parseInt(document.getElementById('sim-timesteps').value) || 3;
+  const statusRow = document.getElementById('sim-status-row');
+  const resultsEl = document.getElementById('sim-results');
+  const useWazuh = document.getElementById('sim-use-wazuh')?.checked;
+  const envBadge = document.getElementById('sim-env-badge');
+
+  btn.classList.add('running');
+  btn.disabled = true;
+  btn.innerHTML = `<div class="spinner"></div> Simulating...`;
+  statusRow.classList.remove('hidden');
+
+  // Step 1: If Wazuh toggle is on, fetch real infrastructure first
+  let environmentJson = null;
+  let envSource = 'sample';
+  if (useWazuh) {
+    resultsEl.innerHTML = `<div style="padding:16px;color:var(--text-secondary);line-height:1.8;">
+      <div style="font-size:15px;color:var(--accent);margin-bottom:8px;"><div class="spinner" style="display:inline-block;width:12px;height:12px;border-top-color:var(--accent);vertical-align:middle;margin-right:6px;"></div> Fetching live infrastructure from Wazuh...</div>
+      <div style="font-size:12px;color:var(--text-muted);">Querying Wazuh Manager API for real agents, CVEs, services, and defenses.</div>
+    </div>`;
+    const wazuhRes = await apiFetch('/api/simulate/environment/from-wazuh', { method: 'POST' });
+    if (wazuhRes.ok && wazuhRes.data?.environment) {
+      environmentJson = wazuhRes.data.environment;
+      envSource = 'wazuh';
+      const hostCount = wazuhRes.data.hosts_discovered || 0;
+      if (envBadge) { envBadge.textContent = `${hostCount} live host(s)`; envBadge.style.display = 'inline'; envBadge.style.background = 'rgba(63,185,80,0.15)'; envBadge.style.color = 'var(--success)'; }
+      renderWazuhTopology(environmentJson);
+    } else {
+      if (envBadge) { envBadge.textContent = 'Wazuh unavailable — using sample'; envBadge.style.display = 'inline'; envBadge.style.background = 'rgba(248,81,73,0.15)'; envBadge.style.color = 'var(--critical)'; }
+    }
+  } else {
+    if (envBadge) { envBadge.textContent = 'sample environment'; envBadge.style.display = 'inline'; envBadge.style.background = 'rgba(139,148,158,0.15)'; envBadge.style.color = 'var(--text-muted)'; }
+  }
+
+  // Step 2: Run the simulation
+  resultsEl.innerHTML = `
+    <div style="padding:16px;color:var(--text-secondary);line-height:1.8;">
+      <div style="font-size:15px;color:var(--text-primary);margin-bottom:8px;">What's happening right now:</div>
+      <div>1. <strong>Opportunist</strong> — scanning for easy targets, default credentials, unpatched services</div>
+      <div>2. <strong>APT Operator</strong> — careful recon, targeting high-value assets, avoiding detection</div>
+      <div>3. <strong>Ransomware Crew</strong> — aggressive lateral movement, maximum host compromise</div>
+      <div>4. <strong>Insider Threat</strong> — using legitimate access to reach sensitive data</div>
+      <div style="margin-top:12px;color:var(--text-muted);font-size:12px;">
+        ${envSource === 'wazuh' ? 'Attacking <strong style="color:var(--success);">real Wazuh infrastructure</strong>' : 'Attacking <strong>sample environment</strong> (6 hosts)'}
+        — each agent makes AI decisions via LLM. This takes 30-120 seconds depending on timesteps.
+      </div>
+    </div>`;
+
+  const simBody = { timesteps };
+  if (environmentJson) simBody.environment_json = environmentJson;
+
+  const res = await apiFetch(`/api/simulate?timesteps=${timesteps}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(simBody),
+  });
+
+  btn.classList.remove('running');
+  btn.disabled = false;
+  btn.innerHTML = 'Run Simulation';
+  statusRow.classList.add('hidden');
+
+  if (!res.ok) {
+    const errMsg = res.data?.error || '';
+    let humanMsg = 'The simulation could not complete.';
+    if (errMsg.includes('timed out')) {
+      humanMsg = `The simulation took too long (>${timesteps * 40}s). Try reducing timesteps to 1 or 2. Each timestep requires 4 AI decisions (~10s each).`;
+    } else if (errMsg.includes('Connection refused') || errMsg.includes('connection')) {
+      humanMsg = 'The simulation engine is not running. Make sure the correlation-engine container is healthy.';
+    }
+    resultsEl.innerHTML = `<div style="padding:16px;color:var(--high);line-height:1.6;">
+      <div style="font-size:14px;font-weight:600;margin-bottom:6px;">Simulation did not complete</div>
+      <div style="color:var(--text-secondary);">${humanMsg}</div>
+    </div>`;
+    toast('Simulation did not complete — see details below', 'error');
+    return;
+  }
+
+  const d = res.data;
+  const agents = d.campaigns || [];
+  const weaknesses = d.weakest_points || [];
+  const recommendations = d.recommended_actions || [];
+  const summary = d.results_summary || {};
+
+  // Archetype descriptions for human context
+  const archetypeDesc = {
+    opportunist: 'Low-skill attacker scanning for easy wins — default creds, unpatched services',
+    apt: 'State-sponsored operator — patient, stealthy, targets high-value assets',
+    ransomware: 'Ransomware crew — aggressive, fast, maximizes lateral spread',
+    insider: 'Malicious insider — has legitimate access, targets sensitive data',
+  };
+
+  const resultColors = { success: 'var(--success)', detected: 'var(--high)', blocked: 'var(--critical)', failure: 'var(--text-muted)' };
+
+  let html = `<div style="padding:4px 0 12px;border-bottom:1px solid var(--border);margin-bottom:16px;">
+    <div style="font-size:13px;color:var(--text-primary);font-weight:600;">Simulation Complete</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">
+      ${summary.total_actions || 0} actions taken across ${agents.length} attackers &mdash;
+      ${summary.successful_actions || 0} succeeded, ${summary.blocked_actions || 0} blocked, ${summary.detected_actions || 0} detected
+      &mdash; completed in ${((d.duration_ms || 0) / 1000).toFixed(0)}s
+    </div>
+  </div>`;
+
+  // Per-agent campaign narratives — show the attacker's REASONING
+  agents.forEach(a => {
+    const archetype = a.archetype || 'unknown';
+    const compromised = Array.isArray(a.hosts_compromised) ? a.hosts_compromised : [];
+    const path = a.attack_path || [];
+    const desc = archetypeDesc[archetype] || '';
+
+    html += `<div style="margin-bottom:20px;padding:14px;background:var(--bg-card);border-radius:8px;border-left:4px solid ${compromised.length > 0 ? 'var(--critical)' : 'var(--text-muted)'};">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <div style="font-size:14px;font-weight:600;color:var(--text-primary);text-transform:uppercase;">${escHtml(archetype)}</div>
+        <div style="font-size:11px;color:${compromised.length > 0 ? 'var(--critical)' : 'var(--success)'};">
+          ${compromised.length > 0 ? compromised.length + ' host(s) compromised' : 'No compromise achieved'}
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">${desc}</div>`;
+
+    // Attack path as a narrative timeline
+    if (path.length) {
+      path.forEach((step, i) => {
+        const color = resultColors[step.result] || 'var(--text-muted)';
+        const resultLabel = step.result === 'success' ? 'SUCCESS' : step.result === 'detected' ? 'DETECTED' : step.result === 'blocked' ? 'BLOCKED' : 'FAILED';
+        const reasoning = step.reasoning || '';
+
+        html += `<div style="padding:8px 0 8px 16px;border-left:2px solid ${color};margin-left:8px;margin-bottom:4px;">
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px;">Turn ${step.timestep + 1} &mdash; ${escHtml(step.action)} on <span style="font-family:var(--font-mono);color:var(--accent);">${escHtml(step.target)}</span></div>
+          <div style="font-size:12px;color:var(--text-secondary);font-style:italic;margin-bottom:3px;">"${escHtml(reasoning)}"</div>
+          <div style="font-size:11px;">
+            <span style="color:${color};font-weight:600;">${resultLabel}</span>
+            ${step.mitre && step.mitre !== '-' ? ` &mdash; <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);">${escHtml(step.mitre)}</span>` : ''}
+          </div>
+        </div>`;
+      });
+    } else {
+      html += `<div style="font-size:12px;color:var(--text-muted);padding:8px 0 0 16px;">No actions recorded</div>`;
+    }
+
+    html += `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;gap:8px;">
+      <button class="btn btn-ghost btn-sm" onclick="openChatPanel('${escHtml(d.simulation_id)}', '${escHtml(a.agent_id)}', '${escHtml(archetype)}')">Talk to Attacker</button>
+    </div>`;
+    html += `</div>`;
+  });
+
+  // Defender response section
+  if (d.defender_campaigns && d.defender_campaigns.length) {
+    html += `<div style="margin-top:24px;padding-top:16px;border-top:2px solid rgba(88,166,255,0.3);">
+      <div style="font-size:14px;font-weight:700;color:#58a6ff;margin-bottom:12px;letter-spacing:1px;">
+        DEFENSE RESPONSE
+      </div>`;
+
+    // Defender summary card
+    const ds = d.defender_summary || {};
+    html += `<div style="margin-bottom:16px;padding:12px;background:rgba(88,166,255,0.08);border:1px solid rgba(88,166,255,0.3);border-radius:8px;">
+      <div style="display:flex;gap:20px;flex-wrap:wrap;font-size:12px;color:var(--text-secondary);">
+        <div><span style="color:#3fb950;font-weight:700;">${ds.attacks_prevented || 0}</span> attacks prevented</div>
+        <div><span style="color:#58a6ff;font-weight:700;">${(ds.hosts_isolated || []).length}</span> hosts isolated</div>
+        <div><span style="color:#a371f7;font-weight:700;">${(ds.ips_blocked || []).length}</span> IPs blocked</div>
+        <div><span style="color:#3fb950;font-weight:700;">${(ds.edr_deployed || []).length}</span> EDR deployed</div>
+        ${ds.credentials_revoked ? '<div style="color:#3fb950;font-weight:700;">Credentials revoked</div>' : ''}
+      </div>
+    </div>`;
+
+    // Per-defender campaign cards
+    d.defender_campaigns.forEach(dc => {
+      const dcColor = AGENT_COLORS[dc.archetype] || '#58a6ff';
+      const dPath = dc.defense_path || [];
+
+      html += `<div style="margin-bottom:16px;padding:14px;background:var(--bg-card);border-radius:8px;border-left:4px solid ${dcColor};">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <div style="font-size:14px;font-weight:600;color:${dcColor};text-transform:uppercase;">&#128737; ${escHtml(dc.archetype)}</div>
+          <div style="font-size:11px;color:#3fb950;">${dc.successful_blocks || 0} blocks</div>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">${dc.actions_taken || 0} actions taken</div>`;
+
+      dPath.forEach(step => {
+        const rc = step.result === 'success' ? 'var(--success)' : 'var(--text-muted)';
+        html += `<div style="padding:8px 0 8px 16px;border-left:2px solid ${dcColor};margin-left:8px;margin-bottom:4px;">
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px;">Turn ${(step.timestep||0)+1} &mdash; ${escHtml(step.action)} on <span style="font-family:var(--font-mono);color:var(--accent);">${escHtml(step.target)}</span></div>
+          <div style="font-size:12px;color:var(--text-secondary);font-style:italic;margin-bottom:3px;">"${escHtml(step.reasoning || '')}"</div>
+          <div style="font-size:11px;"><span style="color:${rc};font-weight:600;">${(step.result||'').toUpperCase()}</span></div>
+        </div>`;
+      });
+
+      // Talk to Defender button
+      html += `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;gap:8px;">
+        <button class="btn btn-ghost btn-sm" style="border-color:rgba(88,166,255,0.3);color:#58a6ff;" onclick="openChatPanel('${escHtml(d.simulation_id)}', '${escHtml(dc.agent_id)}', '${escHtml(dc.archetype)}')">Talk to Defender</button>
+      </div>`;
+      html += `</div>`;
+    });
+
+    html += `</div>`;
+  }
+
+  // Weakest points
+  if (weaknesses.length) {
+    html += `<div style="margin-top:16px;padding:12px;background:rgba(248,81,73,0.08);border:1px solid rgba(248,81,73,0.3);border-radius:8px;">
+      <div style="font-size:13px;font-weight:600;color:var(--critical);margin-bottom:8px;">Weakest Points in Your Network</div>`;
+    weaknesses.forEach(w => {
+      const vuln = typeof w === 'string' ? w : (w.vulnerability || JSON.stringify(w));
+      const count = w.exploit_count || '';
+      html += `<div style="font-size:12px;color:var(--text-secondary);padding:4px 0;border-bottom:1px solid rgba(248,81,73,0.1);">
+        ${escHtml(vuln)}${count ? ` <span style="color:var(--critical);font-weight:600;">(exploited ${count}x)</span>` : ''}
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Recommended actions
+  if (recommendations.length) {
+    html += `<div style="margin-top:12px;padding:12px;background:rgba(63,185,80,0.08);border:1px solid rgba(63,185,80,0.3);border-radius:8px;">
+      <div style="font-size:13px;font-weight:600;color:var(--success);margin-bottom:8px;">Recommended Actions</div>`;
+    recommendations.forEach((r, i) => {
+      const action = typeof r === 'string' ? r : (r.action || JSON.stringify(r));
+      const rationale = r.rationale || '';
+      html += `<div style="font-size:12px;color:var(--text-primary);padding:6px 0;border-bottom:1px solid rgba(63,185,80,0.1);">
+        <span style="color:var(--success);font-weight:700;">${i + 1}.</span> ${escHtml(action)}
+        ${rationale ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${escHtml(rationale)}</div>` : ''}
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  resultsEl.innerHTML = html;
+
+  // Initialize war-game replay
+  if (d.environment) {
+    WarGameReplay.init(d);
+  }
+
+  // Initialize what-if mode
+  const whatIfEnv = environmentJson || d.environment;
+  if (whatIfEnv) {
+    renderWhatIfEditor(d, whatIfEnv);
+  } else {
+    // Try fetching default environment for sample mode
+    apiFetch('/api/environment/default').then(envRes => {
+      if (envRes.ok && envRes.data && envRes.data.hosts) {
+        renderWhatIfEditor(d, envRes.data);
+      }
+    });
+  }
+
+  toast('Simulation complete — see attacker narratives below', 'success');
+}
+
+// ── RISK SCORES ──────────────────────────────────────────────
+async function loadRiskScores() {
+  const wrap = document.getElementById('risk-table-wrap');
+  const gradeEl = document.getElementById('risk-grade-big');
+  const labelEl = document.getElementById('risk-grade-label');
+  const subEl = document.getElementById('risk-grade-sub');
+
+  const [scoresRes, summaryRes] = await Promise.allSettled([
+    apiFetch('/api/risk-scores'),
+    apiFetch('/api/risk-summary'),
+  ]);
+
+  if (summaryRes.status === 'fulfilled' && summaryRes.value.ok) {
+    const d = summaryRes.value.data;
+    const grade = d.overall_security_posture_rating || d.grade || '--';
+    gradeEl.textContent = grade;
+    gradeEl.className = `risk-grade-big ${gradeClass(grade)}`;
+    labelEl.textContent = gradeLabel(grade);
+    subEl.textContent = d.summary || d.description || '';
+  } else {
+    gradeEl.textContent = '--';
+    labelEl.textContent = 'Risk summary unavailable';
+  }
+
+  if (scoresRes.status === 'fulfilled' && scoresRes.value.ok) {
+    const d = scoresRes.value.data;
+    const scores = d.scores || d.host_scores || d.hosts || (Array.isArray(d) ? d : []);
+    if (!scores.length) {
+      wrap.innerHTML = '<div class="text-muted" style="font-size:12px;">No risk score data available.</div>';
+      return;
+    }
+
+    let html = `<table class="risk-table"><thead><tr><th>IP</th><th>Hostname</th><th>Risk Score</th><th>Primary Vector</th></tr></thead><tbody>`;
+    scores.forEach(h => {
+      const score = h.risk_score ?? h.score ?? 0;
+      const fill = Math.min(score, 100);
+      const color = scoreColor(score);
+      html += `<tr>
+        <td class="mono">${h.ip || h.host_ip || '--'}</td>
+        <td class="hostname">${h.hostname || h.name || '--'}</td>
+        <td>
+          <div class="score-cell">
+            <div class="score-mini-bar"><div class="score-mini-fill" style="width:${fill}%;background:${color};"></div></div>
+            <span class="score-num" style="color:${color};">${Math.round(score)}</span>
+          </div>
+        </td>
+        <td style="font-size:11px;color:var(--text-muted);">${h.primary_vector || h.top_threat || '--'}</td>
+      </tr>`;
+    });
+    html += `</tbody></table>`;
+
+    // Also update network map cards
+    scores.forEach(h => {
+      const ip = h.ip || h.host_ip || '';
+      const score = h.risk_score ?? h.score ?? 0;
+      updateHostCard(ip, score);
+    });
+
+    wrap.innerHTML = html;
+  } else {
+    wrap.innerHTML = '<div class="text-muted" style="font-size:12px;">Risk scores unavailable.</div>';
+  }
+}
+
+function updateHostCard(ip, score) {
+  const hostMap = {
+    '10.0.0.10': 'host-web-server-01',
+    '10.0.0.20': 'host-mail-server-01',
+    '10.0.1.10': 'host-workstation-01',
+    '10.0.1.20': 'host-file-server-01',
+    '10.0.2.10': 'host-prod-db-01',
+    '10.0.2.20': 'host-dc-01',
+  };
+  const cardId = hostMap[ip];
+  if (!cardId) return;
+  const card = document.getElementById(cardId);
+  if (!card) return;
+  const bar = card.querySelector('.host-risk-bar');
+  if (bar) {
+    bar.style.width = `${Math.min(score, 100)}%`;
+    bar.style.background = scoreColor(score);
+  }
+  card.className = `host-card ${riskClass(score)}`;
+}
+
+async function refreshRiskScores() {
+  const btn = event.target;
+  setButtonLoading(btn, true);
+  toast('Refreshing risk scores...', 'info', 2000);
+  const res = await apiFetch('/api/risk-scores/refresh?runs=2', { method: 'POST' });
+  setButtonLoading(btn, false);
+  if (res.ok) {
+    toast('Risk scores refreshed', 'success');
+    await loadRiskScores();
+  } else {
+    toast('Risk refresh failed: ' + (res.data?.error || 'Service unavailable'), 'error');
+  }
+}
+
+// ── SERVICES / FOOTER ────────────────────────────────────────
+async function loadServices() {
+  const grid = document.getElementById('services-grid');
+  const res = await apiFetch('/api/services');
+  if (!res.ok) {
+    grid.innerHTML = '<div class="text-muted" style="font-size:12px;">Service health unavailable.</div>';
+    return;
+  }
+  const services = res.data.services || [];
+  grid.innerHTML = '';
+  services.forEach(s => {
+    const isHealthy = s.status === 'healthy';
+    const isOffline = s.status === 'offline' || s.status === 'error';
+    const dotColor = isHealthy ? 'var(--success)' : isOffline ? 'var(--critical)' : 'var(--high)';
+    const card = document.createElement('div');
+    card.className = 'service-card';
+    card.innerHTML = `
+      <div class="service-dot" style="background:${dotColor}"></div>
+      <div class="service-info">
+        <div class="service-name">${escHtml(s.label || s.id)}</div>
+        <div class="service-sub">${escHtml(s.status)}</div>
+      </div>
+      <a class="service-docs" href="${s.docs_url || s.url + '/docs'}" target="_blank">Docs</a>`;
+    grid.appendChild(card);
+  });
+}
+
+async function loadDockerStatus() {
+  const badge = document.getElementById('footer-container-badge');
+  const res = await apiFetch('/api/status');
+  if (res.ok) {
+    const total = res.data.total_count || 0;
+    const healthy = res.data.healthy_count || 0;
+    badge.textContent = `${healthy}/${total} Containers`;
+    badge.className = `sev-badge ${total > 0 && healthy === total ? 'low' : healthy > 0 ? 'medium' : 'critical'}`;
+  }
+}
+
+async function loadPendingRules() {
+  const el = document.getElementById('pending-rules-count');
+  const res = await apiFetch('/api/rules/pending');
+  if (res.ok) {
+    const rules = Array.isArray(res.data) ? res.data : (res.data.rules || res.data.pending || []);
+    el.textContent = rules.length;
+  } else {
+    el.textContent = '--';
+  }
+}
+
+async function loadRAGCollections() {
+  const el = document.getElementById('rag-collections');
+  const res = await apiFetch('/api/rag/collections');
+  if (res.ok) {
+    const cols = Array.isArray(res.data) ? res.data : (res.data.collections || []);
+    if (!cols.length) {
+      el.innerHTML = '<span class="text-muted" style="font-size:11px;">No collections.</span>';
+      return;
+    }
+    el.innerHTML = cols.map(c => `<span class="collection-tag">${escHtml(c.name || c)}</span>`).join('');
+  } else {
+    el.innerHTML = '<span class="text-muted" style="font-size:11px;">Unavailable.</span>';
+  }
+}
+
+function toggleFooter() {
+  const body = document.getElementById('footer-body');
+  const chevron = document.getElementById('footer-chevron');
+  const open = body.classList.toggle('open');
+  chevron.classList.toggle('open', open);
+  if (open) {
+    loadServices();
+    loadDockerStatus();
+    loadPendingRules();
+    loadRAGCollections();
+  }
+}
+
+// ── ESCAPE HTML ──────────────────────────────────────────────
+function escHtml(s) {
+  if (typeof s !== 'string') s = String(s);
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ── CHAT WITH ATTACKER ──────────────────────────────────────
+const AGENT_COLORS = { opportunist: '#d29922', apt: '#f85149', ransomware: '#bc4dff', insider: '#ff6e40', soc_analyst: '#58a6ff', incident_responder: '#3fb950', threat_hunter: '#a371f7' };
+const chatState = { simulationId: null, agentId: null, archetype: null, sending: false };
+
+const CHAT_SUGGESTIONS = [
+  "Why did you target that host?",
+  "What would have stopped you?",
+  "What was your overall strategy?",
+  "What defenses worried you most?",
+  "Why didn't you go after the domain controller?",
+  "How would you attack differently next time?",
+];
+
+const DEFENDER_ARCHETYPES = ['soc_analyst', 'incident_responder', 'threat_hunter'];
+const DEFENDER_CHAT_SUGGESTIONS = [
+  "Why did you isolate that host?",
+  "What alerts concerned you most?",
+  "What would you do with more resources?",
+  "How did you prioritize threats?",
+];
+
+function openChatPanel(simId, agentId, archetype) {
+  chatState.simulationId = simId;
+  chatState.agentId = agentId;
+  chatState.archetype = archetype;
+  chatState.sending = false;
+
+  const isDefender = DEFENDER_ARCHETYPES.includes(archetype);
+  const color = AGENT_COLORS[archetype] || 'var(--text-muted)';
+  document.getElementById('chat-agent-dot').style.background = color;
+  document.getElementById('chat-agent-name').textContent = agentId;
+  document.getElementById('chat-agent-type').textContent = archetype.toUpperCase() + (isDefender ? ' DEFENDER' : ' AGENT');
+  document.getElementById('chat-messages').innerHTML = '';
+
+  // Set archetype color on attacker bubbles
+  document.getElementById('chat-overlay').dataset.archetype = archetype;
+
+  // Show suggestions based on agent side
+  const suggestions = isDefender ? DEFENDER_CHAT_SUGGESTIONS : CHAT_SUGGESTIONS;
+  const sugEl = document.getElementById('chat-suggestions');
+  sugEl.innerHTML = suggestions.slice(0, 4).map(s =>
+    `<div class="chat-chip" onclick="sendSuggestion(this)">${escHtml(s)}</div>`
+  ).join('');
+
+  document.getElementById('chat-overlay').classList.add('open');
+  document.getElementById('chat-input').focus();
+
+  // Add welcome message
+  if (isDefender) {
+    addChatBubble(`I'm the ${archetype.replace(/_/g, ' ')} from simulation ${simId}. Ask me about my defense decisions, how I prioritized threats, what I would do differently, or why I took specific actions.`, 'attacker', archetype);
+  } else {
+    addChatBubble(`I'm the ${archetype} agent from simulation ${simId}. Ask me anything about my attack campaign — my strategy, what I targeted, what stopped me, or what would stop me next time.`, 'attacker', archetype);
+  }
+}
+
+function closeChatPanel() {
+  document.getElementById('chat-overlay').classList.remove('open');
+  chatState.simulationId = null;
+}
+
+function sendSuggestion(el) {
+  document.getElementById('chat-input').value = el.textContent;
+  sendChatMessage();
+}
+
+async function sendChatMessage() {
+  const input = document.getElementById('chat-input');
+  const msg = input.value.trim();
+  if (!msg || chatState.sending || !chatState.simulationId) return;
+
+  chatState.sending = true;
+  input.value = '';
+  document.getElementById('chat-send-btn').disabled = true;
+
+  addChatBubble(msg, 'user', chatState.archetype);
+  showTypingIndicator();
+
+  const res = await apiFetch(`/api/simulate/${chatState.simulationId}/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ agent_id: chatState.agentId, message: msg }),
+  });
+
+  hideTypingIndicator();
+  chatState.sending = false;
+  document.getElementById('chat-send-btn').disabled = false;
+
+  if (res.ok && res.data.response) {
+    addChatBubble(res.data.response, 'attacker', chatState.archetype);
+  } else {
+    addChatBubble('I couldn\'t process that. The LLM may be unavailable.', 'attacker', chatState.archetype);
+  }
+
+  document.getElementById('chat-input').focus();
+}
+
+function addChatBubble(text, role, archetype) {
+  const el = document.createElement('div');
+  const color = AGENT_COLORS[archetype] || 'var(--text-muted)';
+  el.className = `chat-bubble ${role}`;
+  if (role === 'attacker') {
+    el.style.borderLeftColor = color;
+  }
+  el.textContent = text;
+  const container = document.getElementById('chat-messages');
+  container.appendChild(el);
+  container.scrollTop = container.scrollHeight;
+}
+
+function showTypingIndicator() {
+  const el = document.createElement('div');
+  el.className = 'chat-typing';
+  el.id = 'chat-typing-indicator';
+  const color = AGENT_COLORS[chatState.archetype] || 'var(--text-muted)';
+  el.style.borderLeftColor = color;
+  el.innerHTML = '<div class="chat-typing-dot"></div><div class="chat-typing-dot"></div><div class="chat-typing-dot"></div>';
+  const container = document.getElementById('chat-messages');
+  container.appendChild(el);
+  container.scrollTop = container.scrollHeight;
+}
+
+function hideTypingIndicator() {
+  const el = document.getElementById('chat-typing-indicator');
+  if (el) el.remove();
+}
+
+// ── WAR-GAME REPLAY ─────────────────────────────────────────
+const WarGameReplay = {
+  canvas: null,
+  ctx: null,
+  nodesLayer: null,
+  viewport: null,
+  infoPanel: null,
+  environment: null,
+  campaigns: null,
+  allSteps: [],
+  nodePositions: {},
+  nodeElements: {},
+  nodeStates: {},
+  currentStep: -1,
+  totalSteps: 0,
+  playing: false,
+  speed: 1,
+  animationId: null,
+  lastStepTime: 0,
+  activePulses: [],
+
+  init(report) {
+    this.environment = report.environment || {};
+    this.campaigns = report.campaigns || [];
+    this.allSteps = [];
+    this.activePulses = [];
+    this.currentStep = -1;
+    this.playing = false;
+
+    // Flatten all attack steps and sort by timestep
+    this.campaigns.forEach(c => {
+      (c.attack_path || []).forEach(step => {
+        this.allSteps.push({
+          ...step,
+          agent_id: c.agent_id,
+          archetype: c.archetype,
+          side: 'attacker',
+        });
+      });
+    });
+
+    // Add defender steps from defender_campaigns
+    this.defenderCampaigns = report.defender_campaigns || [];
+    this.defenderCampaigns.forEach(dc => {
+      (dc.defense_path || []).forEach(step => {
+        this.allSteps.push({
+          ...step,
+          agent_id: dc.agent_id,
+          archetype: dc.archetype,
+          side: 'defender',
+        });
+      });
+    });
+
+    this.allSteps.sort((a, b) => a.timestep - b.timestep);
+    this.totalSteps = this.allSteps.length;
+
+    // Render the wargame section
+    this.renderSection();
+    this.computeLayout();
+    this.buildNodes();
+    this.resizeCanvas();
+    this.renderFrame();
+
+    // Auto-play the replay after a brief pause
+    setTimeout(() => this.play(), 800);
+
+    // Scroll the wargame into view
+    const section = document.getElementById('wg-section');
+    if (section) section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    // Listen for window resize
+    window.addEventListener('resize', () => {
+      this.resizeCanvas();
+      this.computeLayout();
+      this.repositionNodes();
+      this.renderFrame();
+    });
+  },
+
+  renderSection() {
+    // Create or reuse the wargame section
+    let section = document.getElementById('wg-section');
+    if (section) section.remove();
+
+    section = document.createElement('div');
+    section.id = 'wg-section';
+    section.className = 'wg-section';
+    section.innerHTML = `
+      <div class="wg-section-header" style="background:linear-gradient(90deg,rgba(248,81,73,0.08),rgba(188,77,255,0.05),transparent);">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:10px;height:10px;border-radius:50%;background:var(--critical);animation:pulse-critical 1.5s infinite;"></div>
+          <div class="section-title" style="margin:0;color:var(--critical);letter-spacing:3px;">WAR-GAME REPLAY</div>
+        </div>
+        <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);">${this.totalSteps} actions across ${this.campaigns.length} attacker${this.defenderCampaigns.length ? ' + ' + this.defenderCampaigns.length + ' defender' : ''} agents</span>
+      </div>
+      <div class="wg-viewport" id="wg-viewport">
+        <div id="wg-narration" style="position:absolute;top:0;left:0;right:0;z-index:5;padding:8px 16px;background:linear-gradient(180deg,rgba(10,14,23,0.9) 0%,transparent 100%);font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);display:flex;align-items:center;gap:8px;min-height:32px;">
+          <span id="wg-narration-dot" style="width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;"></span>
+          <span id="wg-narration-text">Initializing war-game replay...</span>
+        </div>
+        <canvas class="wg-canvas" id="wg-canvas"></canvas>
+        <div class="wg-nodes-layer" id="wg-nodes-layer"></div>
+        <div class="wg-info-panel" id="wg-info-panel">
+          <button class="wg-info-close" onclick="WarGameReplay.hideInfoPanel()">&times;</button>
+          <div id="wg-info-content"></div>
+        </div>
+      </div>
+      <div class="wg-controls">
+        <button class="wg-play-btn" id="wg-play-btn" onclick="WarGameReplay.togglePlay()">&#9654;</button>
+        <button class="wg-step-btn" onclick="WarGameReplay.stepBack()">&larr;</button>
+        <button class="wg-step-btn" onclick="WarGameReplay.stepForward()">Step &rarr;</button>
+        <input type="range" class="wg-scrubber" id="wg-scrubber" min="-1" max="${this.totalSteps - 1}" value="-1"
+          oninput="WarGameReplay.scrubTo(parseInt(this.value))">
+        <span class="wg-step-label" id="wg-step-label">Start</span>
+        <select class="wg-speed-select" onchange="WarGameReplay.speed=parseFloat(this.value)">
+          <option value="0.5">0.5x</option>
+          <option value="1" selected>1x</option>
+          <option value="2">2x</option>
+          <option value="4">4x</option>
+        </select>
+      </div>
+      <div class="wg-legend" id="wg-legend"></div>
+    `;
+
+    // Insert after sim-results
+    const simResults = document.getElementById('sim-results');
+    if (simResults && simResults.parentNode) {
+      simResults.parentNode.insertBefore(section, simResults.nextSibling);
+    }
+
+    this.viewport = document.getElementById('wg-viewport');
+    this.canvas = document.getElementById('wg-canvas');
+    this.ctx = this.canvas.getContext('2d');
+    this.nodesLayer = document.getElementById('wg-nodes-layer');
+    this.infoPanel = document.getElementById('wg-info-panel');
+
+    // Build legend
+    const legendEl = document.getElementById('wg-legend');
+    const seen = new Set();
+    this.campaigns.forEach(c => {
+      if (!seen.has(c.archetype)) {
+        seen.add(c.archetype);
+        const color = AGENT_COLORS[c.archetype] || '#888';
+        legendEl.innerHTML += `<div class="wg-legend-item" onclick="WarGameReplay.showAgentInfo('${escHtml(c.agent_id)}')">
+          <div class="wg-legend-dot" style="background:${color}"></div>
+          <span>${escHtml(c.agent_id)}</span>
+        </div>`;
+      }
+    });
+    // Defender agent legend entries
+    const defSeen = new Set();
+    this.defenderCampaigns.forEach(dc => {
+      if (!defSeen.has(dc.archetype)) {
+        defSeen.add(dc.archetype);
+        const dColor = AGENT_COLORS[dc.archetype] || '#58a6ff';
+        legendEl.innerHTML += `<div class="wg-legend-item" onclick="WarGameReplay.showAgentInfo('${escHtml(dc.agent_id)}')">
+          <div class="wg-legend-dot" style="background:${dColor}"></div>
+          <span>${escHtml(dc.agent_id)}</span>
+        </div>`;
+      }
+    });
+
+    // Node state legend
+    legendEl.innerHTML += `
+      <div class="wg-legend-item"><div class="wg-legend-dot" style="background:var(--accent)"></div><span>Clean</span></div>
+      <div class="wg-legend-item"><div class="wg-legend-dot" style="background:var(--high)"></div><span>Scanned</span></div>
+      <div class="wg-legend-item"><div class="wg-legend-dot" style="background:var(--critical)"></div><span>Compromised</span></div>
+      <div class="wg-legend-item"><div class="wg-legend-dot" style="background:#58a6ff;border:2px dashed #58a6ff;background:transparent;"></div><span>Isolated</span></div>
+      <div class="wg-legend-item"><div class="wg-legend-dot" style="background:#3fb950"></div><span>Shielded</span></div>
+    `;
+  },
+
+  resizeCanvas() {
+    if (!this.canvas || !this.viewport) return;
+    const rect = this.viewport.getBoundingClientRect();
+    this.canvas.width = rect.width;
+    this.canvas.height = rect.height;
+  },
+
+  computeLayout() {
+    if (!this.viewport) return;
+    const w = this.viewport.offsetWidth;
+    const h = this.viewport.offsetHeight;
+    const segments = this.environment.segments || {};
+    const hosts = this.environment.hosts || {};
+    const segNames = Object.keys(segments);
+
+    // Vertical positions for segments
+    const segY = {};
+    const segOrder = ['dmz', 'external', 'internal', 'corporate', 'critical', 'server'];
+    const orderedSegs = segNames.sort((a, b) => {
+      const ai = segOrder.indexOf(a.toLowerCase());
+      const bi = segOrder.indexOf(b.toLowerCase());
+      return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+    });
+
+    const yStep = h / (orderedSegs.length + 1);
+    orderedSegs.forEach((seg, i) => {
+      segY[seg] = yStep * (i + 1);
+    });
+
+    this.nodePositions = {};
+    orderedSegs.forEach(segName => {
+      const seg = segments[segName];
+      const hostIPs = seg.hosts || [];
+      const xStep = w / (hostIPs.length + 1);
+      hostIPs.forEach((ip, j) => {
+        this.nodePositions[ip] = { x: xStep * (j + 1), y: segY[segName], segment: segName };
+      });
+    });
+
+    // Handle hosts not in any segment
+    let orphanIdx = 0;
+    Object.keys(hosts).forEach(ip => {
+      if (!this.nodePositions[ip]) {
+        this.nodePositions[ip] = { x: 60 + orphanIdx * 100, y: h - 40, segment: 'unknown' };
+        orphanIdx++;
+      }
+    });
+  },
+
+  buildNodes() {
+    if (!this.nodesLayer) return;
+    this.nodesLayer.innerHTML = '';
+    this.nodeElements = {};
+    this.nodeStates = {};
+    const hosts = this.environment.hosts || {};
+    const segments = this.environment.segments || {};
+
+    // Segment labels
+    const drawnSegs = new Set();
+    Object.entries(this.nodePositions).forEach(([ip, pos]) => {
+      if (!drawnSegs.has(pos.segment)) {
+        drawnSegs.add(pos.segment);
+        const lbl = document.createElement('div');
+        lbl.className = 'wg-segment-label';
+        lbl.style.top = (pos.y - 40) + 'px';
+        lbl.textContent = pos.segment.toUpperCase();
+        this.nodesLayer.appendChild(lbl);
+      }
+    });
+
+    Object.entries(hosts).forEach(([ip, host]) => {
+      const pos = this.nodePositions[ip];
+      if (!pos) return;
+
+      const crit = host.criticality || 'medium';
+      const osIcon = (host.os || '').toLowerCase().includes('windows') ? '&#128187;' : '&#128421;';
+
+      const node = document.createElement('div');
+      node.className = 'wg-node';
+      node.style.left = pos.x + 'px';
+      node.style.top = pos.y + 'px';
+      node.onclick = () => this.showNodeInfo(ip);
+      node.innerHTML = `
+        <div style="position:relative;display:inline-block;">
+          <div class="wg-node-ring ${crit} state-clean" id="wg-ring-${ip.replace(/\./g,'-')}">${osIcon}</div>
+          <div class="wg-node-shield" id="wg-shield-${ip.replace(/\./g,'-')}">&#128737;</div>
+        </div>
+        <div class="wg-node-label">${escHtml(host.hostname || ip)}</div>
+        <div class="wg-node-ip">${escHtml(ip)}</div>
+      `;
+      this.nodesLayer.appendChild(node);
+      this.nodeElements[ip] = node;
+      this.nodeStates[ip] = 'clean';
+    });
+  },
+
+  repositionNodes() {
+    Object.entries(this.nodeElements).forEach(([ip, el]) => {
+      const pos = this.nodePositions[ip];
+      if (pos) {
+        el.style.left = pos.x + 'px';
+        el.style.top = pos.y + 'px';
+      }
+    });
+  },
+
+  stepTo(n) {
+    // State precedence: isolated(5) > shielded(4) > compromised(3) > scanned(2) > clean(1)
+    const STATE_PRIORITY = { clean: 1, scanned: 2, compromised: 3, shielded: 4, isolated: 5 };
+
+    // Reset all node states and shield visibility
+    Object.keys(this.nodeStates).forEach(ip => {
+      this.nodeStates[ip] = 'clean';
+      const shield = document.getElementById(`wg-shield-${ip.replace(/\./g, '-')}`);
+      if (shield) shield.classList.remove('visible');
+    });
+
+    // Replay from start to step n (cumulative)
+    for (let i = 0; i <= n && i < this.allSteps.length; i++) {
+      const step = this.allSteps[i];
+      const targetIP = step.target;
+      if (!targetIP || !this.nodeStates.hasOwnProperty(targetIP)) continue;
+
+      if (step.side === 'defender') {
+        // Defender actions
+        if (step.action === 'isolate_host' && step.result === 'success') {
+          const newPri = STATE_PRIORITY['isolated'] || 0;
+          const curPri = STATE_PRIORITY[this.nodeStates[targetIP]] || 0;
+          if (newPri >= curPri) {
+            this.nodeStates[targetIP] = 'isolated';
+          }
+        } else if (step.action === 'deploy_edr' || step.action === 'block_ip') {
+          const shield = document.getElementById(`wg-shield-${targetIP.replace(/\./g, '-')}`);
+          if (shield) shield.classList.add('visible');
+          const curPri = STATE_PRIORITY[this.nodeStates[targetIP]] || 0;
+          if (STATE_PRIORITY['shielded'] > curPri) {
+            this.nodeStates[targetIP] = 'shielded';
+          }
+        }
+      } else {
+        // Attacker actions — but isolated nodes stay isolated
+        if (this.nodeStates[targetIP] === 'isolated') continue;
+        if (step.result === 'success' || step.result === 'detected') {
+          const curPri = STATE_PRIORITY[this.nodeStates[targetIP]] || 0;
+          if (STATE_PRIORITY['compromised'] > curPri) {
+            this.nodeStates[targetIP] = 'compromised';
+          }
+        } else if (this.nodeStates[targetIP] === 'clean') {
+          this.nodeStates[targetIP] = 'scanned';
+        }
+      }
+    }
+
+    // Update DOM nodes
+    Object.entries(this.nodeStates).forEach(([ip, state]) => {
+      const ring = document.getElementById(`wg-ring-${ip.replace(/\./g, '-')}`);
+      if (ring) {
+        ring.className = ring.className.replace(/state-\w+/g, '').trim() + ` state-${state}`;
+      }
+    });
+
+    this.currentStep = n;
+
+    // Update controls
+    const scrubber = document.getElementById('wg-scrubber');
+    if (scrubber) scrubber.value = n;
+    const label = document.getElementById('wg-step-label');
+    if (label) {
+      if (n < 0) {
+        label.textContent = 'Start';
+      } else if (n < this.allSteps.length) {
+        const step = this.allSteps[n];
+        label.textContent = `${n + 1}/${this.totalSteps}`;
+      }
+    }
+
+    // Trigger pulse animation for current step + narration
+    if (n >= 0 && n < this.allSteps.length) {
+      const step = this.allSteps[n];
+      this.addPulse(step);
+      this.updateNarration(step);
+    } else {
+      this.updateNarration(null);
+    }
+
+    this.renderFrame();
+  },
+
+  updateNarration(step) {
+    const textEl = document.getElementById('wg-narration-text');
+    const dotEl = document.getElementById('wg-narration-dot');
+    if (!textEl || !dotEl) return;
+
+    if (!step) {
+      textEl.textContent = 'Initializing war-game replay...';
+      dotEl.style.background = 'var(--accent)';
+      return;
+    }
+
+    const color = AGENT_COLORS[step.archetype] || '#888';
+    dotEl.style.background = color;
+    const host = (this.environment.hosts || {})[step.target];
+    const hostname = host?.hostname || step.target;
+    const resultColors = { success: 'var(--success)', detected: 'var(--high)', blocked: 'var(--critical)', failure: 'var(--text-muted)' };
+    const resultLabel = (step.result || 'unknown').toUpperCase();
+    const rc = resultColors[step.result] || 'var(--text-muted)';
+
+    if (step.side === 'defender') {
+      textEl.innerHTML = `<span style="color:${color};font-weight:700;">&#128737; ${escHtml(step.agent_id)}</span> `
+        + `<span style="color:var(--text-muted);">&#8594;</span> `
+        + `<span style="color:#58a6ff;">${escHtml(step.action)}</span> on `
+        + `<span style="color:var(--text-primary);">${escHtml(hostname)}</span> `
+        + `<span style="color:var(--text-muted);">(${escHtml(step.target)})</span> `
+        + `&#8212; <span style="color:${rc};font-weight:700;">${resultLabel}</span>`;
+    } else {
+      textEl.innerHTML = `<span style="color:${color};font-weight:700;">${escHtml(step.agent_id)}</span> `
+        + `<span style="color:var(--text-muted);">&#8594;</span> `
+        + `<span style="color:var(--accent);">${escHtml(step.action)}</span> on `
+        + `<span style="color:var(--text-primary);">${escHtml(hostname)}</span> `
+        + `<span style="color:var(--text-muted);">(${escHtml(step.target)})</span> `
+        + `&#8212; <span style="color:${rc};font-weight:700;">${resultLabel}</span>`;
+    }
+  },
+
+  addPulse(step) {
+    // Find source position
+    const targetPos = this.nodePositions[step.target];
+    if (!targetPos) return;
+
+    let sourcePos;
+    const color = AGENT_COLORS[step.archetype] || '#888';
+
+    if (step.side === 'defender') {
+      // Defenders originate from bottom-center (SOC center)
+      sourcePos = { x: this.canvas.width / 2, y: this.canvas.height };
+    } else {
+      // Attacker: try to find previous compromised host of this agent, or use top-center
+      sourcePos = { x: this.canvas.width / 2, y: 0 };
+      const agentSteps = this.allSteps.filter(s => s.agent_id === step.agent_id);
+      const stepIdx = agentSteps.indexOf(step);
+      if (stepIdx > 0) {
+        const prevTarget = agentSteps[stepIdx - 1].target;
+        if (this.nodePositions[prevTarget]) {
+          sourcePos = this.nodePositions[prevTarget];
+        }
+      }
+    }
+
+    this.activePulses.push({
+      sx: sourcePos.x, sy: sourcePos.y,
+      tx: targetPos.x, ty: targetPos.y,
+      color,
+      result: step.result,
+      side: step.side || 'attacker',
+      progress: 0,
+      speed: 0.018 * this.speed,
+    });
+  },
+
+  renderFrame() {
+    if (!this.ctx || !this.canvas) return;
+    const ctx = this.ctx;
+    const w = this.canvas.width;
+    const h = this.canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    // Draw segment zone backgrounds
+    const segments = this.environment.segments || {};
+    const drawnSegs = {};
+    Object.values(this.nodePositions).forEach(pos => {
+      if (!drawnSegs[pos.segment]) drawnSegs[pos.segment] = [];
+      drawnSegs[pos.segment].push(pos);
+    });
+    Object.entries(drawnSegs).forEach(([seg, positions]) => {
+      const minY = Math.min(...positions.map(p => p.y)) - 30;
+      const maxY = Math.max(...positions.map(p => p.y)) + 30;
+      ctx.fillStyle = 'rgba(42, 58, 74, 0.15)';
+      ctx.fillRect(0, minY, w, maxY - minY);
+    });
+
+    // Draw reachability edges (faint)
+    Object.entries(segments).forEach(([segName, seg]) => {
+      (seg.reachable_from || []).forEach(fromSeg => {
+        const fromSegData = segments[fromSeg];
+        if (!fromSegData) return;
+        const fromHosts = fromSegData.hosts || [];
+        const toHosts = seg.hosts || [];
+        if (fromHosts.length && toHosts.length) {
+          // Draw a single representative edge between segment centers
+          const fx = fromHosts.reduce((s, ip) => s + (this.nodePositions[ip]?.x || 0), 0) / fromHosts.length;
+          const fy = fromHosts.reduce((s, ip) => s + (this.nodePositions[ip]?.y || 0), 0) / fromHosts.length;
+          const tx = toHosts.reduce((s, ip) => s + (this.nodePositions[ip]?.x || 0), 0) / toHosts.length;
+          const ty = toHosts.reduce((s, ip) => s + (this.nodePositions[ip]?.y || 0), 0) / toHosts.length;
+          ctx.beginPath();
+          ctx.moveTo(fx, fy);
+          ctx.lineTo(tx, ty);
+          ctx.strokeStyle = 'rgba(42, 58, 74, 0.4)';
+          ctx.lineWidth = 1;
+          ctx.setLineDash([4, 4]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+      });
+    });
+
+    // Animate active pulses
+    const remaining = [];
+    this.activePulses.forEach(p => {
+      p.progress += p.speed;
+      if (p.progress > 1.1) return; // done (overshoot for arrival effect)
+
+      const progress = Math.min(p.progress, 1);
+      // Ease-in-out for smoother motion
+      const eased = progress < 0.5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+      const x = p.sx + (p.tx - p.sx) * eased;
+      const y = p.sy + (p.ty - p.sy) * eased;
+
+      // Glowing trail line (drawn first, behind the pulse)
+      const grad = ctx.createLinearGradient(p.sx, p.sy, x, y);
+      grad.addColorStop(0, 'transparent');
+      grad.addColorStop(0.6, p.color);
+      grad.addColorStop(1, p.color);
+      ctx.beginPath();
+      ctx.moveTo(p.sx, p.sy);
+      ctx.lineTo(x, y);
+      ctx.strokeStyle = grad;
+      ctx.globalAlpha = 0.5;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      // Outer glow on trail
+      ctx.strokeStyle = p.color;
+      ctx.globalAlpha = 0.1;
+      ctx.lineWidth = 6;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // Comet trail (6 particles, fading)
+      for (let t = 1; t <= 6; t++) {
+        const tp = Math.max(0, eased - t * 0.025);
+        const trailX = p.sx + (p.tx - p.sx) * tp;
+        const trailY = p.sy + (p.ty - p.sy) * tp;
+        const radius = 4 - t * 0.5;
+        const alpha = 0.5 - t * 0.07;
+        if (radius > 0 && alpha > 0) {
+          ctx.beginPath();
+          ctx.arc(trailX, trailY, radius, 0, Math.PI * 2);
+          ctx.fillStyle = p.color;
+          ctx.globalAlpha = alpha;
+          ctx.fill();
+        }
+      }
+
+      if (p.progress <= 1) {
+        // Main pulse dot with glow
+        ctx.globalAlpha = 0.25;
+        ctx.beginPath();
+        ctx.arc(x, y, 16, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+
+        ctx.globalAlpha = 0.5;
+        ctx.beginPath();
+        ctx.arc(x, y, 10, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+
+        ctx.globalAlpha = 1;
+        ctx.beginPath();
+        ctx.arc(x, y, 6, 0, Math.PI * 2);
+        ctx.fillStyle = '#fff';
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+      } else {
+        // Arrival burst effect
+        const burst = (p.progress - 1) * 10; // 0 to 1
+        const burstAlpha = 1 - burst;
+        if (burstAlpha > 0) {
+          const burstColor = p.side === 'defender'
+            ? (p.result === 'success' ? '#3fb950' : '#58a6ff')
+            : (p.result === 'blocked' ? '#f85149' : p.result === 'success' ? p.color : '#58a6ff');
+          ctx.globalAlpha = burstAlpha * 0.4;
+          ctx.beginPath();
+          ctx.arc(p.tx, p.ty, 20 + burst * 30, 0, Math.PI * 2);
+          ctx.fillStyle = burstColor;
+          ctx.fill();
+          ctx.globalAlpha = burstAlpha * 0.6;
+          ctx.beginPath();
+          ctx.arc(p.tx, p.ty, 10 + burst * 15, 0, Math.PI * 2);
+          ctx.fillStyle = burstColor;
+          ctx.fill();
+        }
+      }
+
+      ctx.globalAlpha = 1;
+      remaining.push(p);
+    });
+    this.activePulses = remaining;
+
+    // Continue animation if pulses are active or playing
+    if (this.activePulses.length > 0 || this.playing) {
+      this.animationId = requestAnimationFrame(() => this.renderFrame());
+    }
+  },
+
+  togglePlay() {
+    if (this.playing) {
+      this.pause();
+    } else {
+      this.play();
+    }
+  },
+
+  play() {
+    this.playing = true;
+    document.getElementById('wg-play-btn').innerHTML = '&#9646;&#9646;';
+    this.lastStepTime = Date.now();
+    if (this.currentStep >= this.totalSteps - 1) {
+      this.currentStep = -1;
+    }
+    this._playLoop();
+  },
+
+  _playLoop() {
+    if (!this.playing) return;
+    const now = Date.now();
+    const interval = 1200 / this.speed;
+    if (now - this.lastStepTime >= interval) {
+      this.lastStepTime = now;
+      if (this.currentStep < this.totalSteps - 1) {
+        this.stepTo(this.currentStep + 1);
+      } else {
+        this.pause();
+        return;
+      }
+    }
+    // Also keep rendering pulses
+    this.renderFrame();
+    this.animationId = requestAnimationFrame(() => this._playLoop());
+  },
+
+  pause() {
+    this.playing = false;
+    document.getElementById('wg-play-btn').innerHTML = '&#9654;';
+    if (this.animationId) {
+      cancelAnimationFrame(this.animationId);
+      this.animationId = null;
+    }
+  },
+
+  stepForward() {
+    if (this.currentStep < this.totalSteps - 1) {
+      this.stepTo(this.currentStep + 1);
+    }
+  },
+
+  stepBack() {
+    if (this.currentStep >= 0) {
+      this.activePulses = [];
+      this.stepTo(this.currentStep - 1);
+    }
+  },
+
+  scrubTo(n) {
+    this.activePulses = [];
+    this.stepTo(n);
+  },
+
+  showNodeInfo(ip) {
+    const host = (this.environment.hosts || {})[ip];
+    if (!host) return;
+    const state = this.nodeStates[ip] || 'clean';
+    const attacks = this.allSteps.filter(s => s.target === ip && this.allSteps.indexOf(s) <= this.currentStep);
+
+    let html = `<div class="wg-info-title">${escHtml(host.hostname || ip)}</div>`;
+    html += `<div class="wg-info-row"><strong>IP:</strong> ${escHtml(ip)}</div>`;
+    html += `<div class="wg-info-row"><strong>OS:</strong> ${escHtml(host.os || '?')}</div>`;
+    html += `<div class="wg-info-row"><strong>Criticality:</strong> ${escHtml(host.criticality || '?')}</div>`;
+    html += `<div class="wg-info-row"><strong>State:</strong> <span style="color:${state === 'compromised' ? 'var(--critical)' : state === 'scanned' ? 'var(--high)' : 'var(--accent)'}">${state.toUpperCase()}</span></div>`;
+
+    // Defenses
+    const def = host.defenses || {};
+    const defList = Object.entries(def).filter(([,v]) => v).map(([k]) => k.replace(/_/g,' '));
+    html += `<div class="wg-info-row"><strong>Defenses:</strong> ${defList.length ? defList.join(', ') : 'None'}</div>`;
+
+    // Services
+    const svcs = (host.services || []).map(s => `${s.name}:${s.port}`).join(', ');
+    html += `<div class="wg-info-row"><strong>Services:</strong> ${svcs || 'None'}</div>`;
+
+    // Attack history on this node
+    const attackActions = attacks.filter(a => a.side !== 'defender');
+    if (attackActions.length) {
+      html += `<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">`;
+      html += `<div class="wg-info-row" style="font-weight:600;color:var(--text-primary);">Attack History (${attackActions.length})</div>`;
+      attackActions.forEach(a => {
+        const color = AGENT_COLORS[a.archetype] || '#888';
+        html += `<div class="wg-info-row" style="border-left:2px solid ${color};padding-left:6px;margin:4px 0;">
+          <span style="color:${color};font-weight:600;">${escHtml(a.agent_id)}</span>: ${escHtml(a.action)} →
+          <span style="color:${a.result === 'success' ? 'var(--success)' : a.result === 'blocked' ? 'var(--critical)' : 'var(--high)'}">${a.result}</span>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+
+    // Defense history on this node
+    const defenseActions = attacks.filter(a => a.side === 'defender');
+    if (defenseActions.length) {
+      html += `<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">`;
+      html += `<div class="wg-info-row" style="font-weight:600;color:#58a6ff;">Defense History (${defenseActions.length})</div>`;
+      defenseActions.forEach(a => {
+        const color = AGENT_COLORS[a.archetype] || '#58a6ff';
+        html += `<div class="wg-info-row" style="border-left:2px solid ${color};padding-left:6px;margin:4px 0;">
+          <span style="color:${color};font-weight:600;">&#128737; ${escHtml(a.agent_id)}</span>: ${escHtml(a.action)} →
+          <span style="color:${a.result === 'success' ? 'var(--success)' : 'var(--text-muted)'}">${a.result}</span>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+
+    document.getElementById('wg-info-content').innerHTML = html;
+    this.infoPanel.classList.add('visible');
+  },
+
+  showAgentInfo(agentId) {
+    // Search attacker campaigns first, then defender campaigns
+    let campaign = this.campaigns.find(c => c.agent_id === agentId);
+    let isDefender = false;
+    if (!campaign) {
+      campaign = (this.defenderCampaigns || []).find(c => c.agent_id === agentId);
+      isDefender = true;
+    }
+    if (!campaign) return;
+    const color = AGENT_COLORS[campaign.archetype] || '#888';
+
+    let html = `<div class="wg-info-title" style="color:${color}">${isDefender ? '&#128737; ' : ''}${escHtml(agentId)}</div>`;
+    html += `<div class="wg-info-row"><strong>Archetype:</strong> ${escHtml(campaign.archetype)}</div>`;
+    html += `<div class="wg-info-row"><strong>Side:</strong> ${isDefender ? '<span style="color:#58a6ff;">DEFENDER</span>' : '<span style="color:var(--critical);">ATTACKER</span>'}</div>`;
+
+    if (isDefender) {
+      html += `<div class="wg-info-row"><strong>Actions:</strong> ${campaign.actions_taken} taken, ${campaign.successful_blocks || 0} blocks</div>`;
+    } else {
+      html += `<div class="wg-info-row"><strong>Actions:</strong> ${campaign.actions_taken} taken, ${campaign.successful_actions} succeeded</div>`;
+      html += `<div class="wg-info-row"><strong>Detected:</strong> ${campaign.detected_actions}</div>`;
+      html += `<div class="wg-info-row"><strong>Compromised:</strong> ${(campaign.hosts_compromised || []).join(', ') || 'None'}</div>`;
+      html += `<div class="wg-info-row"><strong>Stage:</strong> ${escHtml(campaign.final_kill_chain_stage)}</div>`;
+    }
+
+    document.getElementById('wg-info-content').innerHTML = html;
+    this.infoPanel.classList.add('visible');
+  },
+
+  hideInfoPanel() {
+    this.infoPanel.classList.remove('visible');
+  },
+};
+
+// ── WHAT-IF MODE ─────────────────────────────────────────────
+let whatIfBaselineEnv = null;
+let whatIfBaselineResults = null;
+let whatIfModifiedEnv = null;
+let whatIfModifiedResults = null;
+
+function renderWhatIfEditor(report, envData) {
+  whatIfBaselineResults = report;
+  whatIfBaselineEnv = envData;
+  whatIfModifiedEnv = JSON.parse(JSON.stringify(envData || {}));
+  whatIfModifiedResults = null;
+
+  let section = document.getElementById('whatif-section');
+  if (section) section.remove();
+
+  if (!envData || !envData.hosts) return;
+
+  section = document.createElement('div');
+  section.id = 'whatif-section';
+  section.className = 'whatif-section';
+
+  let hostCards = '';
+  Object.entries(envData.hosts).forEach(([ip, host]) => {
+    const def = host.defenses || {};
+    const services = host.services || [];
+    const cves = services.flatMap(s => (s.cves || []).map(c => ({ svc: s.name, cve: c })));
+
+    hostCards += `<div class="whatif-host-card">
+      <div class="whatif-host-name">${escHtml(host.hostname || ip)}</div>
+      <div class="whatif-host-ip">${escHtml(ip)}</div>
+      <div class="whatif-toggle-row" data-ip="${escHtml(ip)}" data-defense="mfa_enabled">
+        <span class="whatif-toggle-label">MFA</span>
+        <label class="whatif-toggle">
+          <input type="checkbox" ${def.mfa_enabled ? 'checked' : ''} onchange="onWhatIfDefenseToggle(this)">
+          <span class="whatif-toggle-slider"></span>
+        </label>
+      </div>
+      <div class="whatif-toggle-row" data-ip="${escHtml(ip)}" data-defense="edr_present">
+        <span class="whatif-toggle-label">EDR</span>
+        <label class="whatif-toggle">
+          <input type="checkbox" ${def.edr_present ? 'checked' : ''} onchange="onWhatIfDefenseToggle(this)">
+          <span class="whatif-toggle-slider"></span>
+        </label>
+      </div>
+      <div class="whatif-toggle-row" data-ip="${escHtml(ip)}" data-defense="firewall_enabled">
+        <span class="whatif-toggle-label">Firewall</span>
+        <label class="whatif-toggle">
+          <input type="checkbox" ${def.firewall_enabled ? 'checked' : ''} onchange="onWhatIfDefenseToggle(this)">
+          <span class="whatif-toggle-slider"></span>
+        </label>
+      </div>
+      <div class="whatif-toggle-row" data-ip="${escHtml(ip)}" data-defense="patched">
+        <span class="whatif-toggle-label">Patched</span>
+        <label class="whatif-toggle">
+          <input type="checkbox" ${def.patched ? 'checked' : ''} onchange="onWhatIfDefenseToggle(this)">
+          <span class="whatif-toggle-slider"></span>
+        </label>
+      </div>
+      ${cves.length ? `<div style="margin-top:6px;border-top:1px solid var(--border);padding-top:6px;">
+        <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">VULNERABILITIES</div>
+        ${cves.map(c => `<div class="whatif-toggle-row" data-ip="${escHtml(ip)}" data-svc="${escHtml(c.svc)}" data-cve="${escHtml(c.cve)}">
+          <span class="whatif-toggle-label" style="font-family:var(--font-mono);font-size:10px;color:var(--critical);">${escHtml(c.cve)}</span>
+          <label class="whatif-toggle">
+            <input type="checkbox" checked onchange="onWhatIfCveToggle(this)">
+            <span class="whatif-toggle-slider"></span>
+          </label>
+        </div>`).join('')}
+      </div>` : ''}
+    </div>`;
+  });
+
+  section.innerHTML = `
+    <div class="whatif-header">
+      <div class="section-title" style="margin:0;">What-If Analysis</div>
+      <span class="whatif-change-badge" id="whatif-change-badge">0 changes</span>
+    </div>
+    <div class="whatif-editor" id="whatif-editor">${hostCards}</div>
+    <div class="whatif-actions-bar">
+      <div class="whatif-changes-list" id="whatif-changes-list">Toggle defenses to explore "what if" scenarios</div>
+      <button class="btn btn-ghost btn-sm" onclick="resetWhatIf()">Reset</button>
+      <button class="btn btn-primary btn-sm" id="whatif-run-btn" onclick="runWhatIfSimulation()">Apply Changes &amp; Re-run</button>
+    </div>
+    <div class="whatif-comparison" id="whatif-comparison"></div>
+  `;
+
+  // Insert after wg-section if it exists, or after sim-results
+  const wgSection = document.getElementById('wg-section');
+  const simResults = document.getElementById('sim-results');
+  const insertAfter = wgSection || simResults;
+  if (insertAfter && insertAfter.parentNode) {
+    insertAfter.parentNode.insertBefore(section, insertAfter.nextSibling);
+  }
+}
+
+function onWhatIfDefenseToggle(el) {
+  const row = el.closest('.whatif-toggle-row');
+  const ip = row.dataset.ip;
+  const defense = row.dataset.defense;
+  if (!whatIfModifiedEnv || !whatIfModifiedEnv.hosts || !whatIfModifiedEnv.hosts[ip]) return;
+
+  whatIfModifiedEnv.hosts[ip].defenses[defense] = el.checked;
+
+  // Highlight changed toggles
+  const baseline = whatIfBaselineEnv.hosts[ip]?.defenses?.[defense];
+  if (el.checked !== baseline) {
+    row.classList.add('changed');
+  } else {
+    row.classList.remove('changed');
+  }
+  updateWhatIfChangeSummary();
+}
+
+function onWhatIfCveToggle(el) {
+  const row = el.closest('.whatif-toggle-row');
+  const ip = row.dataset.ip;
+  const svcName = row.dataset.svc;
+  const cve = row.dataset.cve;
+  if (!whatIfModifiedEnv || !whatIfModifiedEnv.hosts || !whatIfModifiedEnv.hosts[ip]) return;
+
+  const host = whatIfModifiedEnv.hosts[ip];
+  const service = (host.services || []).find(s => s.name === svcName);
+  if (!service) return;
+
+  if (el.checked) {
+    if (!service.cves.includes(cve)) service.cves.push(cve);
+  } else {
+    service.cves = service.cves.filter(c => c !== cve);
+  }
+
+  // Highlight
+  const baseService = (whatIfBaselineEnv.hosts[ip]?.services || []).find(s => s.name === svcName);
+  const baseCves = baseService?.cves || [];
+  const changed = el.checked !== baseCves.includes(cve);
+  if (changed) row.classList.add('changed');
+  else row.classList.remove('changed');
+
+  updateWhatIfChangeSummary();
+}
+
+function updateWhatIfChangeSummary() {
+  const changes = [];
+  if (!whatIfBaselineEnv || !whatIfModifiedEnv) return;
+
+  Object.entries(whatIfBaselineEnv.hosts || {}).forEach(([ip, baseHost]) => {
+    const modHost = whatIfModifiedEnv.hosts[ip];
+    if (!modHost) return;
+    const hostname = baseHost.hostname || ip;
+
+    // Defense changes
+    Object.entries(baseHost.defenses || {}).forEach(([k, v]) => {
+      const modV = modHost.defenses?.[k];
+      if (modV !== v) {
+        changes.push(`${modV ? 'Enable' : 'Disable'} ${k.replace(/_/g, ' ')} on ${hostname}`);
+      }
+    });
+
+    // CVE changes
+    (baseHost.services || []).forEach(svc => {
+      const modSvc = (modHost.services || []).find(s => s.name === svc.name);
+      if (!modSvc) return;
+      (svc.cves || []).forEach(cve => {
+        if (!(modSvc.cves || []).includes(cve)) {
+          changes.push(`Patch ${cve} on ${hostname}`);
+        }
+      });
+    });
+  });
+
+  const badge = document.getElementById('whatif-change-badge');
+  const listEl = document.getElementById('whatif-changes-list');
+  if (changes.length) {
+    badge.textContent = `${changes.length} change${changes.length > 1 ? 's' : ''}`;
+    badge.classList.add('visible');
+    listEl.textContent = changes.join(' · ');
+  } else {
+    badge.classList.remove('visible');
+    listEl.textContent = 'Toggle defenses to explore "what if" scenarios';
+  }
+}
+
+async function runWhatIfSimulation() {
+  if (!whatIfModifiedEnv) { toast('No environment to modify', 'warning'); return; }
+
+  const btn = document.getElementById('whatif-run-btn');
+  setButtonLoading(btn, true);
+
+  const timesteps = parseInt(document.getElementById('sim-timesteps').value) || 3;
+  const res = await apiFetch(`/api/simulate?timesteps=${timesteps}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ timesteps, environment_json: whatIfModifiedEnv }),
+  });
+
+  setButtonLoading(btn, false);
+
+  if (!res.ok) {
+    toast('What-If simulation failed', 'error');
+    return;
+  }
+
+  whatIfModifiedResults = res.data;
+  renderWhatIfComparison(whatIfBaselineResults, whatIfModifiedResults);
+  toast('What-If comparison ready', 'success');
+}
+
+function renderWhatIfComparison(baseline, modified) {
+  const el = document.getElementById('whatif-comparison');
+  if (!el) return;
+
+  const bs = baseline.results_summary || {};
+  const ms = modified.results_summary || {};
+
+  // Compute deltas
+  const metrics = [
+    { label: 'Attacks Blocked', bv: bs.blocked_actions || 0, mv: ms.blocked_actions || 0, higher_is_better: true },
+    { label: 'Hosts Compromised', bv: (baseline.campaigns||[]).reduce((n,c) => n + (c.hosts_compromised||[]).length, 0),
+      mv: (modified.campaigns||[]).reduce((n,c) => n + (c.hosts_compromised||[]).length, 0), higher_is_better: false },
+    { label: 'Success Rate', bv: bs.success_rate || 0, mv: ms.success_rate || 0, higher_is_better: false, pct: true },
+    { label: 'Detection Rate', bv: bs.detection_rate || 0, mv: ms.detection_rate || 0, higher_is_better: true, pct: true },
+  ];
+
+  let html = '<div class="whatif-deltas">';
+  metrics.forEach(m => {
+    const bStr = m.pct ? (m.bv * 100).toFixed(0) + '%' : m.bv;
+    const mStr = m.pct ? (m.mv * 100).toFixed(0) + '%' : m.mv;
+    const diff = m.mv - m.bv;
+    const improved = m.higher_is_better ? diff > 0 : diff < 0;
+    const worsened = m.higher_is_better ? diff < 0 : diff > 0;
+    const cls = diff === 0 ? 'neutral' : (improved ? 'improved' : 'worsened');
+    const sign = diff > 0 ? '+' : '';
+    const diffStr = m.pct ? `${sign}${(diff * 100).toFixed(0)}%` : `${sign}${diff}`;
+
+    html += `<div class="whatif-delta-card">
+      <div class="whatif-delta-label">${escHtml(m.label)}</div>
+      <div class="whatif-delta-values">
+        <span style="color:var(--text-muted)">${bStr}</span>
+        <span class="whatif-delta-arrow">&rarr;</span>
+        <span style="color:var(--text-primary)">${mStr}</span>
+      </div>
+      <div class="whatif-delta-pct ${cls}">${diffStr}</div>
+    </div>`;
+  });
+  html += '</div>';
+
+  // Per-archetype comparison
+  html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:12px;">';
+  (baseline.campaigns || []).forEach(bc => {
+    const mc = (modified.campaigns || []).find(c => c.archetype === bc.archetype) || {};
+    const color = AGENT_COLORS[bc.archetype] || '#888';
+    const bComp = (bc.hosts_compromised || []).length;
+    const mComp = (mc.hosts_compromised || []).length;
+
+    let verdict, verdictCls;
+    if (bComp > 0 && mComp === 0) { verdict = 'STOPPED'; verdictCls = 'stopped'; }
+    else if (mComp < bComp) { verdict = 'HINDERED'; verdictCls = 'hindered'; }
+    else { verdict = 'NO CHANGE'; verdictCls = 'nochange'; }
+
+    html += `<div style="background:var(--bg-surface);border:1px solid var(--border);border-left:3px solid ${color};border-radius:var(--radius-sm);padding:10px;">
+      <div style="font-size:12px;font-weight:600;color:var(--text-primary);text-transform:uppercase;margin-bottom:6px;">${escHtml(bc.archetype)}</div>
+      <div style="font-size:11px;color:var(--text-secondary);">Compromised: ${bComp} &rarr; ${mComp}</div>
+      <div style="font-size:11px;color:var(--text-secondary);">Succeeded: ${bc.successful_actions||0} &rarr; ${mc.successful_actions||0}</div>
+      <div style="margin-top:6px;"><span class="whatif-verdict ${verdictCls}">${verdict}</span></div>
+    </div>`;
+  });
+  html += '</div>';
+
+  // Business insight
+  const totalBaseComp = (baseline.campaigns||[]).reduce((n,c) => n + (c.hosts_compromised||[]).length, 0);
+  const totalModComp = (modified.campaigns||[]).reduce((n,c) => n + (c.hosts_compromised||[]).length, 0);
+  const blockedDiff = (ms.blocked_actions || 0) - (bs.blocked_actions || 0);
+
+  let insight = '';
+  if (totalModComp < totalBaseComp) {
+    const pct = Math.round((1 - totalModComp / Math.max(totalBaseComp, 1)) * 100);
+    insight = `Your defense changes reduced compromised hosts from ${totalBaseComp} to ${totalModComp} (${pct}% improvement). `;
+  }
+  if (blockedDiff > 0) {
+    insight += `${blockedDiff} additional attack${blockedDiff > 1 ? 's were' : ' was'} blocked by the new configuration. `;
+  }
+  if (!insight) {
+    insight = 'The defense changes did not significantly alter the simulation outcome. Consider enabling stronger controls like MFA and EDR on critical hosts.';
+  }
+
+  // Defender effectiveness comparison (if both have defender_summary)
+  const bds = baseline.defender_summary;
+  const mds = modified.defender_summary;
+  if (bds && mds) {
+    const defMetrics = [
+      { label: 'Attacks Prevented', bv: bds.attacks_prevented || 0, mv: mds.attacks_prevented || 0, higher_is_better: true },
+      { label: 'Hosts Isolated', bv: (bds.hosts_isolated || []).length, mv: (mds.hosts_isolated || []).length, higher_is_better: true },
+      { label: 'IPs Blocked', bv: (bds.ips_blocked || []).length, mv: (mds.ips_blocked || []).length, higher_is_better: true },
+      { label: 'EDR Deployed', bv: (bds.edr_deployed || []).length, mv: (mds.edr_deployed || []).length, higher_is_better: true },
+    ];
+
+    html += `<div style="margin-top:12px;padding-top:12px;border-top:2px solid rgba(88,166,255,0.3);">
+      <div style="font-size:12px;font-weight:700;color:#58a6ff;margin-bottom:8px;letter-spacing:1px;">DEFENDER EFFECTIVENESS</div>
+      <div class="whatif-deltas">`;
+    defMetrics.forEach(m => {
+      const diff = m.mv - m.bv;
+      const improved = m.higher_is_better ? diff > 0 : diff < 0;
+      const cls = diff === 0 ? 'neutral' : (improved ? 'improved' : 'worsened');
+      const sign = diff > 0 ? '+' : '';
+      html += `<div class="whatif-delta-card">
+        <div class="whatif-delta-label">${escHtml(m.label)}</div>
+        <div class="whatif-delta-values">
+          <span style="color:var(--text-muted)">${m.bv}</span>
+          <span class="whatif-delta-arrow">&rarr;</span>
+          <span style="color:var(--text-primary)">${m.mv}</span>
+        </div>
+        <div class="whatif-delta-pct ${cls}">${sign}${diff}</div>
+      </div>`;
+    });
+    html += '</div></div>';
+  }
+
+  html += `<div class="whatif-insight">${escHtml(insight)}</div>`;
+
+  el.innerHTML = html;
+  el.classList.add('visible');
+}
+
+function resetWhatIf() {
+  if (!whatIfBaselineEnv) return;
+  whatIfModifiedEnv = JSON.parse(JSON.stringify(whatIfBaselineEnv));
+  whatIfModifiedResults = null;
+
+  // Re-render editor
+  renderWhatIfEditor(whatIfBaselineResults, whatIfBaselineEnv);
+
+  const compEl = document.getElementById('whatif-comparison');
+  if (compEl) { compEl.innerHTML = ''; compEl.classList.remove('visible'); }
+}
+
+// ── SWARM MODE ───────────────────────────────────────────────
+let swarmPollTimer = null;
+
+function toggleSwarmConfig() {
+  const on = document.getElementById('sim-swarm-mode').checked;
+  const cfg = document.getElementById('swarm-config');
+  if (on) cfg.classList.add('visible');
+  else cfg.classList.remove('visible');
+}
+
+async function runSwarmSimulation() {
+  const btn = document.getElementById('btn-sim');
+  const statusRow = document.getElementById('sim-status-row');
+  const resultsEl = document.getElementById('sim-results');
+  const timesteps = parseInt(document.getElementById('sim-timesteps').value) || 3;
+  const swarmSize = parseInt(document.getElementById('swarm-size')?.value) || 50;
+  const mcRuns = parseInt(document.getElementById('mc-runs')?.value) || 5;
+  const useWazuh = document.getElementById('sim-use-wazuh')?.checked;
+
+  btn.classList.add('running');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Swarm Running...';
+  statusRow.classList.remove('hidden');
+
+  // Fetch wazuh env if needed
+  let environmentJson = null;
+  if (useWazuh) {
+    const wazuhRes = await apiFetch('/api/simulate/environment/from-wazuh', { method: 'POST' });
+    if (wazuhRes.ok && wazuhRes.data?.environment) environmentJson = wazuhRes.data.environment;
+  }
+
+  // Build request body
+  const body = {};
+  if (environmentJson) body.environment_json = environmentJson;
+
+  const params = new URLSearchParams({
+    swarm_size: swarmSize,
+    monte_carlo_runs: mcRuns,
+    timesteps: timesteps,
+    defenders_enabled: true,
+  });
+
+  // Start swarm
+  const startRes = await apiFetch(`/api/simulate/swarm/start?${params}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+
+  if (!startRes.ok) {
+    btn.classList.remove('running');
+    btn.disabled = false;
+    btn.innerHTML = 'Run Simulation';
+    statusRow.classList.add('hidden');
+    resultsEl.innerHTML = `<div style="padding:16px;color:var(--critical);">Swarm failed to start: ${startRes.data?.error || 'Unknown error'}</div>`;
+    return;
+  }
+
+  const swarmId = startRes.data.swarm_id;
+
+  // Show progress UI
+  resultsEl.innerHTML = `
+    <div class="swarm-progress" id="swarm-progress">
+      <div style="font-size:14px;font-weight:600;color:var(--critical);margin-bottom:8px;letter-spacing:1px;">SWARM SIMULATION</div>
+      <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;">
+        ${swarmSize} followers/archetype &times; ${mcRuns} Monte Carlo batches &times; ${timesteps} timesteps
+      </div>
+      <div class="swarm-progress-bar"><div class="swarm-progress-fill" id="swarm-progress-fill" style="width:0%"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);">
+        <span id="swarm-progress-text">Starting...</span>
+        <span id="swarm-progress-time">0s</span>
+      </div>
+    </div>`;
+
+  // Poll for progress
+  swarmPollTimer = setInterval(async () => {
+    const statusRes = await apiFetch(`/api/simulate/swarm/${swarmId}/status`);
+    if (!statusRes.ok) return;
+
+    const s = statusRes.data;
+    if (s.status === 'complete') {
+      clearInterval(swarmPollTimer);
+      swarmPollTimer = null;
+      // Fetch result
+      const resultRes = await apiFetch(`/api/simulate/swarm/${swarmId}/result`);
+      btn.classList.remove('running');
+      btn.disabled = false;
+      btn.innerHTML = 'Run Simulation';
+      statusRow.classList.add('hidden');
+
+      if (resultRes.ok) {
+        renderSwarmResults(resultRes.data);
+        toast('Swarm simulation complete — statistical results below', 'success');
+      } else {
+        resultsEl.innerHTML = '<div style="padding:16px;color:var(--critical);">Failed to fetch swarm results</div>';
+      }
+      return;
+    }
+
+    if (s.status === 'failed') {
+      clearInterval(swarmPollTimer);
+      swarmPollTimer = null;
+      btn.classList.remove('running');
+      btn.disabled = false;
+      btn.innerHTML = 'Run Simulation';
+      statusRow.classList.add('hidden');
+      resultsEl.innerHTML = `<div style="padding:16px;color:var(--critical);">Swarm failed: ${s.error || 'Unknown'}</div>`;
+      return;
+    }
+
+    // Update progress
+    const pct = s.total_batches > 0 ? Math.round((s.current_batch / s.total_batches) * 100) : 0;
+    const fill = document.getElementById('swarm-progress-fill');
+    const text = document.getElementById('swarm-progress-text');
+    const timeEl = document.getElementById('swarm-progress-time');
+    if (fill) fill.style.width = pct + '%';
+    if (text) text.textContent = `Batch ${s.current_batch}/${s.total_batches} — ${s.total_agent_runs} agent runs`;
+    if (timeEl) timeEl.textContent = Math.round((s.elapsed_ms || 0) / 1000) + 's';
+  }, 5000);
+}
+
+function renderSwarmResults(report) {
+  const resultsEl = document.getElementById('sim-results');
+  const heatmap = report.host_risk_heatmap || {};
+  const archStats = report.archetype_statistics || {};
+  const pathFreq = report.path_frequency || {};
+  const defEff = report.defense_effectiveness || {};
+  const vulnRank = report.vulnerability_ranking || [];
+  const confidence = report.statistical_confidence || {};
+  const env = report.environment || {};
+
+  let html = '';
+
+  // Header stats
+  html += `<div style="padding:12px 0;border-bottom:1px solid var(--border);margin-bottom:16px;">
+    <div style="font-size:14px;font-weight:700;color:var(--critical);letter-spacing:1px;margin-bottom:4px;">SWARM INTELLIGENCE REPORT</div>
+    <div style="font-size:12px;color:var(--text-muted);">
+      ${report.total_agent_runs || 0} agent runs across ${report.total_simulations || 0} Monte Carlo batches — completed in ${((report.duration_ms || 0) / 1000).toFixed(0)}s
+    </div>
+  </div>`;
+
+  // Confidence dashboard
+  html += `<div class="swarm-stats-grid">
+    <div class="swarm-stat-card">
+      <div class="swarm-stat-value">${report.total_agent_runs || 0}</div>
+      <div class="swarm-stat-label">Agent Runs</div>
+    </div>
+    <div class="swarm-stat-card">
+      <div class="swarm-stat-value">${report.total_simulations || 0}</div>
+      <div class="swarm-stat-label">Monte Carlo Batches</div>
+    </div>
+    <div class="swarm-stat-card">
+      <div class="swarm-stat-value" style="color:${confidence.convergence_achieved ? 'var(--success)' : 'var(--high)'};">${confidence.convergence_achieved ? 'Yes' : 'No'}</div>
+      <div class="swarm-stat-label">Convergence</div>
+      ${confidence.convergence_batch > 0 ? `<div class="swarm-stat-sub">at batch ${confidence.convergence_batch}</div>` : ''}
+    </div>
+    <div class="swarm-stat-card">
+      <div class="sparkline-container" style="justify-content:center;">
+        ${(confidence.batch_success_rate_series || []).map(r => `<div class="sparkline-bar" style="height:${Math.max(5, r * 30)}px;"></div>`).join('')}
+      </div>
+      <div class="swarm-stat-label">Batch Convergence</div>
+    </div>
+  </div>`;
+
+  // Host Risk Heatmap
+  html += `<div style="margin-bottom:20px;">
+    <div class="section-title" style="margin-bottom:12px;">Host Compromise Heatmap</div>
+    <div class="swarm-heatmap" id="swarm-heatmap"></div>
+    <div style="display:flex;gap:16px;margin-top:8px;font-size:10px;color:var(--text-muted);justify-content:center;">
+      <span><span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:#3fb950;vertical-align:middle;margin-right:4px;"></span>0% (Safe)</span>
+      <span><span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:#d29922;vertical-align:middle;margin-right:4px;"></span>50%</span>
+      <span><span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:#f85149;vertical-align:middle;margin-right:4px;"></span>100% (Critical)</span>
+    </div>
+  </div>`;
+
+  // Compromise Rate Bar Chart
+  const hostEntries = Object.entries(heatmap).sort((a, b) => b[1].compromise_rate - a[1].compromise_rate);
+  html += `<div style="margin-bottom:20px;">
+    <div class="section-title" style="margin-bottom:12px;">Compromise Rate by Host</div>
+    <div class="bar-chart">`;
+  hostEntries.forEach(([ip, stats]) => {
+    const pct = Math.round(stats.compromise_rate * 100);
+    const color = pct > 66 ? 'var(--critical)' : pct > 33 ? 'var(--high)' : 'var(--success)';
+    html += `<div class="bar-row">
+      <span class="bar-label">${escHtml(stats.hostname || ip)}</span>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${Math.max(pct, 3)}%;background:${color};">${pct}%</div>
+      </div>
+    </div>`;
+  });
+  html += `</div></div>`;
+
+  // Archetype Statistics
+  html += `<div style="margin-bottom:20px;">
+    <div class="section-title" style="margin-bottom:12px;">Archetype Performance</div>
+    <div class="swarm-stats-grid">`;
+  const archetypeColors = { opportunist: '#d29922', apt: '#f85149', ransomware: '#bc4dff', insider: '#ff6e40' };
+  Object.entries(archStats).forEach(([arch, stats]) => {
+    const color = archetypeColors[arch] || 'var(--text-muted)';
+    html += `<div class="swarm-stat-card" style="border-left:3px solid ${color};">
+      <div style="font-size:12px;font-weight:700;color:${color};text-transform:uppercase;margin-bottom:6px;">${escHtml(arch)}</div>
+      <div style="font-size:11px;color:var(--text-secondary);line-height:1.8;">
+        <div>Hosts compromised: <strong style="color:var(--text-primary);">${stats.hosts_compromised_mean?.toFixed(1) || 0}</strong> <span style="color:var(--text-muted);">(&plusmn;${stats.hosts_compromised_std?.toFixed(1) || 0})</span></div>
+        <div>Success rate: <strong style="color:var(--text-primary);">${((stats.success_rate_mean || 0) * 100).toFixed(0)}%</strong> <span style="color:var(--text-muted);">(&plusmn;${((stats.success_rate_std || 0) * 100).toFixed(0)}%)</span></div>
+        <div>Detection rate: <strong style="color:var(--text-primary);">${((stats.detection_rate_mean || 0) * 100).toFixed(0)}%</strong></div>
+        <div>Exfiltration: <strong style="color:var(--text-primary);">${((stats.data_exfiltration_rate || 0) * 100).toFixed(0)}%</strong></div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:4px;">n=${stats.sample_size || 0}</div>
+      </div>
+    </div>`;
+  });
+  html += `</div></div>`;
+
+  // Attack Path Frequency
+  const topPaths = Object.entries(pathFreq).slice(0, 8);
+  if (topPaths.length) {
+    html += `<div style="margin-bottom:20px;">
+      <div class="section-title" style="margin-bottom:12px;">Top Attack Paths</div>
+      <div class="bar-chart">`;
+    topPaths.forEach(([path, stats]) => {
+      const pct = Math.round(stats.frequency * 100);
+      html += `<div class="bar-row">
+        <span class="bar-label" style="min-width:200px;font-size:10px;" title="${escHtml(path)}">${escHtml(path.length > 30 ? path.slice(0, 30) + '...' : path)}</span>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:${Math.max(pct, 3)}%;background:var(--accent);">${pct}%</div>
+        </div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // Defense Effectiveness
+  html += `<div style="margin-bottom:20px;">
+    <div class="section-title" style="margin-bottom:12px;">Defense Effectiveness</div>
+    <div class="bar-chart">`;
+  Object.entries(defEff).forEach(([defense, stats]) => {
+    const pct = Math.round(stats.block_rate * 100);
+    const ci = stats.confidence_interval_95 || [];
+    const color = pct > 66 ? 'var(--success)' : pct > 33 ? 'var(--high)' : 'var(--critical)';
+    html += `<div class="bar-row">
+      <span class="bar-label" style="text-transform:uppercase;">${escHtml(defense)}</span>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${Math.max(pct, 3)}%;background:${color};">${pct}%</div>
+      </div>
+      <span style="font-size:10px;color:var(--text-muted);min-width:80px;">[${ci.map(v => Math.round(v*100)+'%').join('-')}]</span>
+    </div>`;
+  });
+  html += `</div></div>`;
+
+  // Vulnerability Priority Table
+  if (vulnRank.length) {
+    html += `<div style="margin-bottom:20px;">
+      <div class="section-title" style="margin-bottom:12px;">Vulnerability Priority Ranking</div>
+      <table class="risk-table">
+        <thead><tr><th>#</th><th>Vulnerability</th><th>Host</th><th>Exploit Rate</th><th>Impact</th><th>Priority Score</th></tr></thead>
+        <tbody>`;
+    vulnRank.forEach(v => {
+      const exploitPct = Math.round(v.exploit_rate * 100);
+      const color = exploitPct > 50 ? 'var(--critical)' : exploitPct > 25 ? 'var(--high)' : 'var(--text-secondary)';
+      html += `<tr>
+        <td style="color:var(--accent);font-weight:700;">${v.priority}</td>
+        <td class="mono" style="color:var(--critical);">${escHtml(v.vuln)}</td>
+        <td class="hostname">${escHtml(v.hostname)} <span style="color:var(--text-muted);font-size:10px;">(${escHtml(v.host)})</span></td>
+        <td><span style="color:${color};font-weight:700;">${exploitPct}%</span></td>
+        <td>${v.impact_score}/10</td>
+        <td style="font-weight:700;color:var(--text-primary);">${v.priority_score?.toFixed(1) || 0}</td>
+      </tr>`;
+    });
+    html += `</tbody></table></div>`;
+  }
+
+  // Emergent Discoveries (Improvement #4)
+  const emergent = report.emergent_discoveries || [];
+  if (emergent.length) {
+    html += `<div style="margin-bottom:20px;padding:14px;background:rgba(188,77,255,0.08);border:1px solid rgba(188,77,255,0.3);border-radius:8px;">
+      <div style="font-size:13px;font-weight:700;color:#bc4dff;margin-bottom:10px;letter-spacing:1px;">EMERGENT DISCOVERIES</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">Paths discovered by follower divergence that outperform leader strategies — genuine swarm intelligence</div>`;
+    emergent.forEach(d => {
+      const color = { opportunist: '#d29922', apt: '#f85149', ransomware: '#bc4dff', insider: '#ff6e40' }[d.archetype] || '#888';
+      html += `<div style="padding:10px;margin-bottom:8px;background:var(--bg-card);border-radius:6px;border-left:3px solid ${color};">
+        <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:4px;">${escHtml(d.archetype.toUpperCase())} — Emergent Path</div>
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--accent);margin-bottom:6px;word-break:break-all;">${escHtml(d.emergent_path)}</div>
+        <div style="display:flex;gap:16px;font-size:11px;">
+          <span style="color:var(--success);">Follower: <strong>${Math.round(d.follower_success_rate * 100)}%</strong></span>
+          <span style="color:var(--text-muted);">vs Leader: <strong>${Math.round(d.leader_success_rate * 100)}%</strong></span>
+          <span style="color:#bc4dff;font-weight:700;">+${Math.round(d.improvement * 100)}pp improvement</span>
+          <span style="color:var(--text-muted);">n=${d.sample_size}</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;font-style:italic;">${escHtml(d.insight)}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Cross-Batch Intelligence (Improvement #2)
+  const crossBatch = report.cross_batch_intelligence || {};
+  if (crossBatch.batch_evolution && crossBatch.batch_evolution.length) {
+    const trend = crossBatch.attacker_learning_trend || 'stable';
+    const trendColor = trend === 'improving' ? 'var(--critical)' : trend === 'degrading' ? 'var(--success)' : 'var(--text-muted)';
+    const trendLabel = trend === 'improving' ? 'ATTACKERS ADAPTING' : trend === 'degrading' ? 'DEFENSES WINNING' : 'STABLE';
+    const trendIcon = trend === 'improving' ? '&#9650;' : trend === 'degrading' ? '&#9660;' : '&#9644;';
+
+    html += `<div style="margin-bottom:20px;padding:14px;background:rgba(88,166,255,0.06);border:1px solid rgba(88,166,255,0.2);border-radius:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div style="font-size:13px;font-weight:700;color:var(--accent);letter-spacing:1px;">CROSS-BATCH INTELLIGENCE</div>
+        <span style="font-size:11px;font-weight:700;color:${trendColor};padding:3px 8px;border-radius:4px;background:rgba(88,166,255,0.1);">${trendIcon} ${trendLabel}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:10px;">
+        <div class="swarm-stat-card" style="padding:8px;">
+          <div style="font-family:var(--font-mono);font-size:16px;font-weight:700;color:var(--text-primary);">${Math.round(crossBatch.early_batch_success_rate * 100)}%</div>
+          <div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;">Early Batches</div>
+        </div>
+        <div class="swarm-stat-card" style="padding:8px;">
+          <div style="font-family:var(--font-mono);font-size:16px;font-weight:700;color:${trendColor};">${Math.round(crossBatch.late_batch_success_rate * 100)}%</div>
+          <div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;">Late Batches</div>
+        </div>
+        <div class="swarm-stat-card" style="padding:8px;">
+          <div style="font-family:var(--font-mono);font-size:16px;font-weight:700;color:var(--accent);">${crossBatch.total_unique_strategies || 0}</div>
+          <div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;">Unique Strategies</div>
+        </div>
+        <div class="swarm-stat-card" style="padding:8px;">
+          <div style="font-family:var(--font-mono);font-size:16px;font-weight:700;color:var(--text-primary);">${((crossBatch.strategic_diversity_score || 0) * 100).toFixed(0)}%</div>
+          <div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;">Strategy Diversity</div>
+        </div>
+      </div>`;
+
+    // Top strategies
+    const topStrats = crossBatch.top_strategies || [];
+    if (topStrats.length) {
+      html += `<div style="font-size:11px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;">Most Effective Strategies</div>`;
+      topStrats.forEach((s, i) => {
+        html += `<div style="font-size:11px;color:var(--text-secondary);padding:4px 0;border-bottom:1px solid var(--border);">
+          <span style="color:var(--accent);font-weight:700;">${i+1}.</span> ${escHtml(s.strategy)}
+          <span style="color:var(--critical);font-weight:600;margin-left:8px;">${s.total_compromises} total compromises</span>
+        </div>`;
+      });
+    }
+
+    html += `</div>`;
+  }
+
+  resultsEl.innerHTML = html;
+
+  // Render heatmap with actual node positions
+  setTimeout(() => renderSwarmHeatmap(report), 100);
+}
+
+function renderSwarmHeatmap(report) {
+  const container = document.getElementById('swarm-heatmap');
+  if (!container) return;
+
+  const env = report.environment || {};
+  const heatmap = report.host_risk_heatmap || {};
+  const hosts = env.hosts || {};
+  const segments = env.segments || {};
+
+  // Compute layout
+  const w = container.offsetWidth;
+  const h = container.offsetHeight || 320;
+  const segNames = Object.keys(segments);
+  const segOrder = ['dmz', 'external', 'internal', 'corporate', 'critical', 'server'];
+  const orderedSegs = segNames.sort((a, b) => {
+    const ai = segOrder.indexOf(a.toLowerCase());
+    const bi = segOrder.indexOf(b.toLowerCase());
+    return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+  });
+
+  const yStep = h / (orderedSegs.length + 1);
+  const positions = {};
+  orderedSegs.forEach((segName, i) => {
+    const seg = segments[segName];
+    const hostIPs = seg.hosts || [];
+    const xStep = w / (hostIPs.length + 1);
+    hostIPs.forEach((ip, j) => {
+      positions[ip] = { x: xStep * (j + 1), y: yStep * (i + 1), segment: segName };
+    });
+  });
+
+  // Build nodes
+  let nodesHtml = '';
+  // Segment labels
+  const drawnSegs = new Set();
+  Object.entries(positions).forEach(([ip, pos]) => {
+    if (!drawnSegs.has(pos.segment)) {
+      drawnSegs.add(pos.segment);
+      nodesHtml += `<div style="position:absolute;left:12px;top:${pos.y - 35}px;font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);opacity:0.5;">${escHtml(pos.segment)}</div>`;
+    }
+  });
+
+  Object.entries(hosts).forEach(([ip, host]) => {
+    const pos = positions[ip];
+    if (!pos) return;
+    const stats = heatmap[ip] || {};
+    const rate = stats.compromise_rate || 0;
+    const pct = Math.round(rate * 100);
+
+    // Color interpolation: green (0%) -> yellow (50%) -> red (100%)
+    let color;
+    if (rate < 0.5) {
+      const t = rate / 0.5;
+      const r = Math.round(63 + (210 - 63) * t);
+      const g = Math.round(185 + (153 - 185) * t);
+      const b = Math.round(80 + (34 - 80) * t);
+      color = `rgb(${r},${g},${b})`;
+    } else {
+      const t = (rate - 0.5) / 0.5;
+      const r = Math.round(210 + (248 - 210) * t);
+      const g = Math.round(153 + (81 - 153) * t);
+      const b = Math.round(34 + (73 - 34) * t);
+      color = `rgb(${r},${g},${b})`;
+    }
+
+    const crit = host.criticality || 'medium';
+    const sizeClass = crit === 'critical' ? 'critical' : crit === 'high' ? 'high' : 'medium';
+    const glowIntensity = Math.round(rate * 0.6 * 100) / 100;
+
+    nodesHtml += `<div class="heatmap-node" style="left:${pos.x}px;top:${pos.y}px;">
+      <div class="heatmap-ring ${sizeClass}" style="border-color:${color};background:rgba(${rate > 0.5 ? '248,81,73' : '63,185,80'},0.1);box-shadow:0 0 ${10 + rate * 30}px rgba(${rate > 0.5 ? '248,81,73' : '63,185,80'},${glowIntensity});">
+        ${pct}%
+      </div>
+      <div class="heatmap-label">${escHtml(host.hostname || ip)}</div>
+      <div class="heatmap-rate">${escHtml(ip)}</div>
+    </div>`;
+  });
+
+  container.innerHTML = nodesHtml;
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+async function init() {
+  // Parallel initial loads
+  await Promise.allSettled([
+    refreshMissionBar(),
+    loadIncidents(),
+    loadRiskScores(),
+  ]);
+
+  // Auto-refresh mission bar every 15s
+  refreshTimer = setInterval(refreshMissionBar, 15000);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>{% endraw %}
+</body>
+</html>
